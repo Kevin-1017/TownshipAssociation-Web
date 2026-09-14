@@ -157,13 +157,14 @@ export function pickerDateToApi(v: string): string {
   return `${v}T00:00:00+08:00`;
 }
 
-/** DatePicker 响应回填：ISO 8601（带或不带时区均兼容）→ YYYY-MM-DD */
-export function apiToPickerDate(iso: string): string {
-  return iso.slice(0, 10);
+/** DatePicker 响应回填：ISO 8601（带或不带时区均兼容）→ YYYY-MM-DD；入参为空返回空串（兜底缺值数据，避免整页白屏） */
+export function apiToPickerDate(iso: string | null | undefined): string {
+  return iso ? iso.slice(0, 10) : "";
 }
 
-/** ISO 8601 → 'YYYY-MM-DD HH:mm:ss'（DateTimePicker 回填 / 表格展示兜底；缺时间部分按 00:00:00 补齐） */
-export function apiToPickerDateTime(iso: string): string {
+/** ISO 8601 → 'YYYY-MM-DD HH:mm:ss'（DateTimePicker 回填 / 表格展示兜底；缺时间部分按 00:00:00 补齐；入参为空返回空串） */
+export function apiToPickerDateTime(iso: string | null | undefined): string {
+  if (!iso) return "";
   const normalized = iso.replace(" ", "T");
   const date = normalized.slice(0, 10);
   const parts = normalized.slice(11, 19).split(":");

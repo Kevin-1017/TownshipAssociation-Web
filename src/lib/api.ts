@@ -10,6 +10,16 @@ import type { ApiResult } from "@/lib/types";
  */
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
+/**
+ * 资源地址清洗（同小程序 buildFileUrl 口径）：后端下发的封面/图片可能给
+ * 相对路径（/tsa/files/...，秘书处上传件），需拼域名；外链原样透传。
+ * 注意生产构建 NEXT_PUBLIC_API_BASE_URL 为空串 = 同源部署，直接相对可达。
+ */
+export function buildFileUrl(pathOrUrl: string | null | undefined): string | null {
+  if (!pathOrUrl) return null;
+  return pathOrUrl.startsWith("/") ? `${API_BASE}${pathOrUrl}` : pathOrUrl;
+}
+
 /** 业务错误：code 为后端 Result.code（非 200）；HTTP/网络层错误统一 code = -1 */
 export class ApiError extends Error {
   readonly code: number;

@@ -1,23 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { AmountText, PinnedBadge, SectionHead, ThanksBadge } from "@/components/site/parts";
+import LeaderShowcaseSection from "@/components/site/leader-showcase";
+import { AmountText, SectionHead, ThanksBadge } from "@/components/site/parts";
 import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/state-blocks";
 import { useAsyncData } from "@/components/site/use-async-data";
-import { fetchFoundationHome, fetchNotices } from "@/lib/site-api";
+import { buildFileUrl } from "@/lib/api";
+import { fetchEvents, fetchFoundationHome } from "@/lib/site-api";
 import { formatDate } from "@/lib/site-format";
 
 /**
- * 官网首页：hero + 最新公告速览 + 基金会（奖励 / 捐赠鸣谢）预览。
+ * 官网首页：hero + 乡会事件速览 + 基金会（奖励 / 捐赠鸣谢）预览 + 负责人风采。
  * 只读取数在客户端完成，两路数据各自兜底，单路失败不拖垮整页。
  */
 export default function SiteHomePage() {
-  const notices = useAsyncData(fetchNotices);
   const foundation = useAsyncData(fetchFoundationHome);
 
-  const noticeList = (notices.state.data ?? []).slice(0, 3);
   const rewardItems = (foundation.state.data?.rewards ?? []).slice(0, 4);
   const donationItems = (foundation.state.data?.donations ?? []).slice(0, 4);
+  // 乡会事件最新两条：后端 start_time 倒序，口径同小程序首页区（pageSize 2 即所求）
+  const events = useAsyncData(() => fetchEvents({ page: 1, pageSize: 2 }));
+  const eventRows = events.state.data?.list ?? [];
 
   return (
     <div>
@@ -32,12 +35,12 @@ export default function SiteHomePage() {
             广东工业大学潮阳潮南校友会
           </p>
           <p className="mt-4 max-w-md text-sm leading-relaxed opacity-85 sm:text-[15px]">
-            公告通知、奖励表彰、捐赠鸣谢 —— 乡会公开信息，一站查看。
+            乡会事件、奖励表彰、捐赠鸣谢 —— 乡会公开信息，一站查看。
           </p>
           <p className="site-display mt-2 text-sm opacity-70">同是一方水土人，相逢异方倍亲切。</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/notices" className="site-btn site-btn--onblue">
-              看最新公告
+            <Link href="/events" className="site-btn site-btn--onblue">
+              看乡会事件
             </Link>
             <Link href="/foundation" className="site-btn site-btn--onblue">
               校友基金会
@@ -47,47 +50,62 @@ export default function SiteHomePage() {
       </section>
 
       <div className="site-container space-y-12 pt-10 sm:pt-12">
-        {/* ---------- 最新公告 ---------- */}
-        <section aria-labelledby="home-notices-title">
+        {/* ---------- 乡会事件速览（对应小程序首页「乡会事件」区：最新两条，左图右文；
+            公告职能已被事件线顶替，原「最新公告」区按用户决策移除） ---------- */}
+        <section aria-labelledby="home-events-title">
           <SectionHead
-            id="home-notices-title"
-            title="最新公告"
-            subtitle="乡会通知与公开信息"
-            moreHref="/notices"
-            moreLabel="全部公告"
+            id="home-events-title"
+            title="乡会事件"
+            subtitle="乡会大事与活动，按年份回顾"
+            moreHref="/events"
+            moreLabel="全部事件"
           />
-          {notices.state.status === "loading" ? <ListSkeleton rows={3} /> : null}
-          {notices.state.status === "error" ? (
-            <ErrorHint message={notices.state.error} onRetry={notices.reload} />
+          {events.state.status === "loading" ? <ListSkeleton rows={2} /> : null}
+          {events.state.status === "error" ? (
+            <ErrorHint message={events.state.error} onRetry={events.reload} />
           ) : null}
-          {notices.state.status === "ready" && noticeList.length === 0 ? (
-            <EmptyHint text="暂无公告，请稍后再来查看。" />
+          {events.state.status === "ready" && eventRows.length === 0 ? (
+            <EmptyHint text="暂无事件，敬请期待。" />
           ) : null}
-          {notices.state.status === "ready" && noticeList.length > 0 ? (
+          {events.state.status === "ready" && eventRows.length > 0 ? (
             <div className="site-card site-divide overflow-hidden">
-              {noticeList.map((n) => (
-                <Link
-                  key={n.id}
-                  href={`/notices/detail?id=${encodeURIComponent(n.id)}`}
-                  className="block px-5 py-4 transition-colors hover:bg-[#faf5ea] sm:px-6"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {n.pinned ? <PinnedBadge /> : null}
-                    <span className="site-display min-w-0 flex-1 truncate font-semibold">
-                      {n.title}
+              {eventRows.map((e) => {
+                const cover = buildFileUrl(e.cover);
+                return (
+                  <Link
+                    key={e.id}
+                    href={`/events/detail?id=${encodeURIComponent(e.id)}`}
+                    className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-[#faf5ea] sm:px-6"
+                  >
+                    {cover ? (
+                      // 封面域名不定（/tsa/files 相对址或外链），不进 next/image 白名单，用原生 img 懒加载
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={cover}
+                        alt=""
+                        loading="lazy"
+                        className="site-event-cover site-event-cover--row"
+                      />
+                    ) : (
+                      <span
+                        className="site-event-cover site-event-cover--row site-event-cover--empty site-display"
+                        aria-hidden
+                      >
+                        {e.title.slice(0, 1)}
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="site-display line-clamp-2 text-[15px] font-semibold">
+                        {e.title}
+                      </h3>
+                      <p className="t-sub mt-1 text-xs tabular-nums">{formatDate(e.startTime)}</p>
+                    </div>
+                    <span aria-hidden className="t-soft shrink-0 text-lg leading-none">
+                      ›
                     </span>
-                    <time
-                      className="t-sub shrink-0 text-xs tabular-nums sm:text-sm"
-                      dateTime={n.publishedAt}
-                    >
-                      {formatDate(n.publishedAt)}
-                    </time>
-                  </div>
-                  {n.summary ? (
-                    <p className="t-soft mt-1 line-clamp-2 pr-2 text-sm">{n.summary}</p>
-                  ) : null}
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : null}
         </section>
@@ -184,6 +202,9 @@ export default function SiteHomePage() {
             </div>
           </div>
         </section>
+
+        {/* ---------- 负责人风采 ---------- */}
+        <LeaderShowcaseSection />
       </div>
     </div>
   );

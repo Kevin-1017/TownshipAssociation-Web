@@ -1,0 +1,27 @@
+/**
+ * 后台组(admin)全局主题样式：仅被 (admin)/layout.tsx 引用，不进 site 产物。
+ *
+ * 圆角与官网对齐(site.css 设计口径：卡片 16px、按钮/胶囊 999px)：
+ * TDesign 组件圆角全部走 --td-radius-* token，这里统一改 token；
+ * 按钮再按 .site-btn 口径覆写成胶囊(preserve 方形图标按钮与 circle 形态)。
+ */
+:root {
+  --td-radius-small: 6px;
+  --td-radius-default: 16px;
+  --td-radius-medium: 16px;
+  --td-radius-large: 24px;
+  --td-radius-extraLarge: 28px;
+}
+
+.t-button:not(.t-button--shape-square):not(.t-button--shape-circle) {
+  border-radius: var(--td-radius-round);
+}
+
+.t-tag {
+  border-radius: var(--td-radius-round);
+}
+
+/* 移植自模板 styles/index.less 的 code 字体约定(body 字体走本项目 globals/tailwind) */
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}

@@ -7,7 +7,8 @@ import Link from "next/link";
 const SITE_LINKS: { href: string; label: string }[] = [
   { href: "/", label: "首页" },
   { href: "/foundation", label: "校友基金会" },
-  { href: "/notices", label: "公告通知" },
+  { href: "/events", label: "乡会事件" },
+  { href: "/community", label: "社区广场" },
   { href: "/about", label: "关于我们" },
 ];
 
@@ -32,7 +33,7 @@ export default function SiteFooter() {
               </div>
             </div>
             <p className="t-footer-body mt-4 text-sm">
-              校友会信息展示平台，非经营性；公告通知、奖励表彰与捐赠鸣谢等公开数据由乡会秘书处整理公布。
+              校友会信息展示平台，非经营性；乡会事件、奖励表彰与捐赠鸣谢等公开数据由乡会秘书处整理公布。
             </p>
             <p className="t-footer-body mt-2 text-sm">
               联系邮箱：
@@ -71,7 +72,19 @@ export default function SiteFooter() {
         </div>
 
         <div className="site-footer-divider mt-9 pt-5 text-xs t-footer-sub">
-          © 2026 广东工业大学潮阳潮南校友会（广工胶己人）· 同是一方水土人，相逢异方倍亲切
+          <p>© 2026 广东工业大学潮阳潮南校友会（广工胶己人）· 同是一方水土人，相逢异方倍亲切</p>
+          {/* ICP 占位：与小程序 constants/icp.ts 同口径，备案号下发后两处一起替换 */}
+          <p className="mt-1">
+            网站备案号：
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-white"
+            >
+              核准中（占位）
+            </a>
+          </p>
         </div>
       </div>
     </footer>

@@ -118,7 +118,7 @@ export default function AdminDonationsPage() {
       colKey: "date",
       title: "捐赠日期",
       width: 140,
-      render: ({ row }: { row: DonationRecord }) => apiToPickerDate(row.date),
+      render: ({ row }: { row: DonationRecord }) => apiToPickerDate(row.date) || "-",
     },
     {
       colKey: "op",

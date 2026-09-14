@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+// React 19 移除了 ReactDOM.render，TDesign 命令式组件（MessagePlugin/DialogPlugin）
+// 必须经官方适配器注入 createRoot，否则调用即抛 "reactRender is not a function"。
+// 必须是「客户端」模块导入：(admin) layout 是 Server Component，在那边导入只会跑在服务端。
+// 路径用 es/：与根入口 "tdesign-react"（package.json module → es/index.js）解析到的
+// 同一份 react-render 模块实例对齐；本组件覆盖 /admin/**（含登录页），故在此统一挂载。
+import "tdesign-react/es/_util/react-19-adapter";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   MutationCache,
@@ -10,7 +16,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Button, Layout, Loading, Menu, MessagePlugin, Space } from "tdesign-react";
+import { Loading, MessagePlugin } from "tdesign-react";
+import {
+  BookmarkIcon,
+  DashboardIcon,
+  HeartIcon,
+  NotificationIcon,
+  StarIcon,
+} from "tdesign-icons-react";
 import {
   clearAdminToken,
   clearAdminUsername,
@@ -19,17 +32,19 @@ import {
   subscribeAdminAuth,
 } from "@/lib/admin-auth";
 import { adminLogout, adminMe, isUnauthorizedError } from "@/lib/admin-api";
+import { AdminUIProvider } from "./starter/ui-state";
+import AdminChrome from "./starter/chrome";
+import type { StarterMenuItem } from "./starter/menu";
 
 const LOGIN_PATH = "/admin/login";
-const { Header, Content, Aside } = Layout;
 
-/** 侧边菜单：value 直接用路由路径，与 pathname 一一对应 */
-const MENU_ITEMS = [
-  { path: "/admin", label: "工作台" },
-  { path: "/admin/categories", label: "奖项类别" },
-  { path: "/admin/records", label: "获奖记录" },
-  { path: "/admin/donations", label: "捐赠鸣谢" },
-  { path: "/admin/notices", label: "公告管理" },
+/** 侧边菜单：value 直接用路由路径，与 pathname 一一对应（图标为模板 starter 风格新增） */
+const MENU_ITEMS: StarterMenuItem[] = [
+  { path: "/admin", label: "工作台", icon: <DashboardIcon /> },
+  { path: "/admin/categories", label: "奖项类别", icon: <StarIcon /> },
+  { path: "/admin/records", label: "获奖记录", icon: <BookmarkIcon /> },
+  { path: "/admin/donations", label: "捐赠鸣谢", icon: <HeartIcon /> },
+  { path: "/admin/notices", label: "公告管理", icon: <NotificationIcon /> },
 ];
 
 const getNullToken = () => null;
@@ -62,10 +77,11 @@ const adminQueryClient = new QueryClient({
 });
 
 /**
- * 管理后台外壳：QueryClientProvider + 登录守卫 + TDesign Layout/Menu。
- * /admin/login 也在本 layout 之下（组内路由），故登录页只套 Provider、不套框架。
+ * 管理后台外壳：UI 状态 Provider + QueryClientProvider + 登录守卫，
+ * 视觉框架为移植自 tdesign starter 模板的 AdminChrome（侧栏/顶栏/页脚/配置抽屉）。
+ * /admin/login 也在本 layout 之下（组内路由），登录页走 bare 通道只套 Provider。
  */
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isLogin = pathname === LOGIN_PATH;
@@ -73,9 +89,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   // localStorage 读取走外部订阅：水合阶段用 getNullToken，避免 SSR 快照不一致
   const token = useSyncExternalStore(subscribeAdminAuth, getAdminToken, getNullToken);
 
-  // 无 token 访问业务页 → 回登录页
+  // 无 token 访问业务页 → 回登录页。
+  // 注意：F5 刷新走 hydration，useSyncExternalStore 该阶段快照取 getServerSnapshot(null)，
+  // 若据此判定会把「已登录但刚刷新」误踢回登录页；这里直接读 localStorage 真实值判断，
+  // token 仍留在依赖里用于响应跨页签登出(storage 事件)后的重新检查。
   useEffect(() => {
-    if (!token && !isLogin) {
+    if (!isLogin && !getAdminToken()) {
       router.replace(LOGIN_PATH);
     }
   }, [token, isLogin, router]);
@@ -95,23 +114,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, [router]);
 
   return (
-    <QueryClientProvider client={adminQueryClient}>
-      {isLogin ? (
-        <>{children}</>
-      ) : token ? (
-        <AdminFrame>{children}</AdminFrame>
-      ) : (
-        // 守卫未通过（正在跳登录页）或 SSR 首帧：不闪后台内容
-        <div className="flex min-h-screen items-center justify-center">
-          <Loading size="small" />
-        </div>
-      )}
-    </QueryClientProvider>
+    <AdminUIProvider>
+      <QueryClientProvider client={adminQueryClient}>
+        {isLogin ? (
+          <AdminChrome bare>{children}</AdminChrome>
+        ) : token ? (
+          <AuthedFrame>{children}</AuthedFrame>
+        ) : (
+          // 守卫未通过（正在跳登录页）或 SSR 首帧：不闪后台内容
+          <AdminChrome bare>
+            <div className="flex min-h-screen items-center justify-center">
+              <Loading size="small" />
+            </div>
+          </AdminChrome>
+        )}
+      </QueryClientProvider>
+    </AdminUIProvider>
   );
 }
 
-/** 后台框架：顶栏（用户名 + 退出）+ 侧栏菜单 + 内容区 */
-function AdminFrame({ children }: { children: React.ReactNode }) {
+/** 登录通过后的框架挂载：取用户名、接退出，并给面包屑当前页标题 */
+function AuthedFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -138,29 +161,16 @@ function AdminFrame({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const pageTitle = MENU_ITEMS.find((item) => item.path === pathname)?.label;
+
   return (
-    <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between border-b border-gray-200 bg-white px-6">
-        <div className="text-base font-semibold">广工胶己人 · 管理后台</div>
-        <Space size="middle">
-          <span className="text-sm text-gray-600">{username}</span>
-          <Button variant="text" size="small" onClick={onLogout}>
-            退出登录
-          </Button>
-        </Space>
-      </Header>
-      <Layout className="bg-gray-50">
-        <Aside width="200px" className="border-r border-gray-200 bg-white">
-          <Menu value={pathname} onChange={(v) => router.push(String(v))} theme="light">
-            {MENU_ITEMS.map((item) => (
-              <Menu.MenuItem key={item.path} value={item.path}>
-                {item.label}
-              </Menu.MenuItem>
-            ))}
-          </Menu>
-        </Aside>
-        <Content className="p-6">{children}</Content>
-      </Layout>
-    </Layout>
+    <AdminChrome
+      items={MENU_ITEMS}
+      username={username}
+      onLogout={onLogout}
+      breadcrumb={pageTitle ? [pageTitle] : undefined}
+    >
+      {children}
+    </AdminChrome>
   );
 }

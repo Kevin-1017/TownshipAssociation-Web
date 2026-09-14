@@ -135,6 +135,103 @@ export interface NoticeSaveRequest {
   publishedAt?: string | null;
 }
 
+// ============ 乡会事件（事件线：EventController） ============
+
+/** 事件状态（后端按 Asia/Shanghai 此刻派生，不落库；库表 status 列不参与列表过滤） */
+export type EventStatus = "upcoming" | "past";
+
+/**
+ * 事件列表项（EventListVO）。
+ * 注意：该 VO 无 @JsonInclude(NON_NULL)，可空字段的键恒在、值为 null —— 故写 `T | null` 而非可选。
+ */
+export interface EventListItem {
+  id: string;
+  title: string;
+  /** 封面图 URL，可空 */
+  cover: string | null;
+  /** 摘要，可空 */
+  summary: string | null;
+  /** 开始时间（ISO 8601 带时区；列表由后端按此列倒序） */
+  startTime: string;
+  status: EventStatus;
+}
+
+/**
+ * 事件详情（EventDetailVO）：正文在公众号（v1.2 D2 形态），接口只给
+ * summary + articleUrl 外链，没有 content/status；小程序 detail 页的报名、
+ * 联系电话等字段是本地 mock 幻影，线上契约中不存在，web 端不予实现。
+ */
+export interface EventDetailData {
+  id: string;
+  title: string;
+  cover: string | null;
+  summary: string | null;
+  startTime: string;
+  /** 公众号原文链接，可空（键恒在） */
+  articleUrl: string | null;
+}
+
+// ============ 社区动态（广场：美食基地 / 校园广场） ============
+
+/** 动态类型（后端 CommunityPostVO.type 口径） */
+export type CommunityPostType = "food" | "campus";
+
+/** 评论（CommentVO；类上 NON_NULL，null 字段整体缺省，故均可选） */
+export interface CommunityComment {
+  id: string;
+  author: string;
+  avatar?: string | null;
+  content: string;
+  /** 评论时间（ISO 8601 带时区） */
+  createTime: string;
+  likes?: number | null;
+}
+
+/**
+ * 社区动态（CommunityPostVO，列表与详情共用）：
+ * commentsList 仅详情返回；cuisine/region 仅美食动态有值（后端 NON_NULL 省略 null）。
+ */
+export interface CommunityPost {
+  id: string;
+  type: CommunityPostType;
+  /** 发布者昵称（一期无登录，表单自由填写） */
+  author: string;
+  avatar?: string | null;
+  title: string;
+  content: string;
+  /** 图片 URL 数组（后端保证非 null，无图时为空数组） */
+  images: string[];
+  /** 发布时间（ISO 8601 带时区） */
+  publishTime: string;
+  likes: number;
+  /** 评论条数（后端派生） */
+  comments: number;
+  commentsList?: CommunityComment[] | null;
+  /** 菜系（仅美食动态） */
+  cuisine?: string | null;
+  /** 所在地区（仅美食动态；longdong / daxuecheng） */
+  region?: string | null;
+}
+
+/** 发布动态请求（CommunityPostSaveRequest；校验：标题 5~30 字、内容 10~1000 字） */
+export interface CommunityPostSaveRequest {
+  type: CommunityPostType;
+  author: string;
+  avatar?: string | null;
+  title: string;
+  content: string;
+  images?: string[];
+  cuisine?: string | null;
+  region?: string | null;
+}
+
+/** 发表评论请求（CommentSaveRequest；内容 ≤500 字） */
+export interface CommunityCommentSaveRequest {
+  author: string;
+  avatar?: string | null;
+  content: string;
+}
+
 // ============ 管理端登录 ============
 
 /** 管理端登录出参（AdminLoginVO；role 后端为 Integer：1 超级管理员 / 2 普通管理员） */

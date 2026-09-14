@@ -11,7 +11,8 @@ import { useState } from "react";
 const NAV_ITEMS: { href: string; label: string }[] = [
   { href: "/", label: "首页" },
   { href: "/foundation", label: "校友基金会" },
-  { href: "/notices", label: "公告通知" },
+  { href: "/events", label: "乡会事件" },
+  { href: "/community", label: "社区广场" },
   { href: "/about", label: "关于我们" },
 ];
 
@@ -66,7 +67,7 @@ export default function SiteHeader() {
         {/* 窄屏折叠按钮 */}
         <button
           type="button"
-          className="site-btn md:hidden"
+          className="site-btn site-hamburger"
           style={{ padding: "0.375rem 0.75rem", borderColor: "var(--line)", color: "var(--ink-2)" }}
           aria-expanded={open}
           aria-controls="site-nav-panel"

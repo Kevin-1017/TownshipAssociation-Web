@@ -1,0 +1,100 @@
+/* 移植自模板 src/pages/Login 的 index/Header/Login 三份 module.less(合并、拍平) */
+.loginWrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: 100%;
+  position: relative;
+}
+
+.loginWrapper.light {
+  background-color: white;
+  background-image: url("./assets/assets-login-bg-white.png");
+}
+
+.loginContainer {
+  position: absolute;
+  top: 22%;
+  left: 5%;
+  min-height: 500px;
+  line-height: 22px;
+}
+
+.title {
+  font-size: 36px;
+  line-height: 44px;
+  color: var(--td-text-color-primary);
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.copyright {
+  font-size: 14px;
+  position: absolute;
+  left: 5%;
+  bottom: 64px;
+  color: var(--td-text-color-secondary);
+}
+
+@media screen and (max-height: 762px) {
+  .copyright {
+    display: none;
+  }
+}
+
+/* ---- 顶部条 ---- */
+.loginHeader {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  color: var(--td-text-color-primary);
+}
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--td-text-color-primary);
+}
+
+.operationsContainer {
+  display: flex;
+  align-items: center;
+}
+
+.operationsButton {
+  margin-left: 16px;
+}
+
+.icon {
+  height: 20px;
+  width: 20px;
+  padding: 6px;
+  box-sizing: content-box;
+}
+
+.icon:hover {
+  cursor: pointer;
+}
+
+/* ---- 表单 ---- */
+.itemContainer {
+  width: 400px;
+  margin-top: 48px;
+}
+
+.btnContainer {
+  margin-top: 48px;
+}
+
+@media screen and (max-width: 700px) {
+  .itemContainer {
+    width: min(400px, 86vw);
+  }
+}

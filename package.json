@@ -12,10 +12,13 @@
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",
     "axios": "^1.20.0",
+    "classnames": "^2.5.1",
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "tdesign-react": "^1.18.3"
+    "tdesign-icons-react": "^0.6.11",
+    "tdesign-react": "^1.18.3",
+    "tvision-color": "^1.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
