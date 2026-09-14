@@ -39,6 +39,11 @@ export interface RequestOptions {
   token?: string | null;
 }
 
+/** 后端 FileUploadVO：data={path:"/tsa/files/<uuid>.<ext>"} */
+export interface FileUploadResult {
+  path: string;
+}
+
 /** axios 实例：仅承载 baseURL，鉴权头/请求体按调用点透传 */
 const http = axios.create({ baseURL: API_BASE });
 
@@ -84,6 +89,44 @@ export async function request<T>(
       throw new ApiError(-1, e.message ? `网络请求失败：${e.message}` : "网络请求失败");
     }
     // 响应体 JSON 解析失败等 axios 之外的异常，同样按网络层错误收口
+    throw new ApiError(-1, e instanceof Error ? `网络请求失败：${e.message}` : "网络请求失败");
+  }
+}
+
+/**
+ * multipart 图片上传（字段名钉死 file）：走同一 axios 实例与 Result 解包口径。
+ * path 例：/tsa/community/uploads（公开）或 /tsa/admin/events/cover（带 admin token）；
+ * 成功回 {path:"/tsa/files/<uuid>.<ext>"} 相对路径。
+ */
+export async function uploadImage(
+  path: string,
+  file: File,
+  token?: string | null,
+): Promise<FileUploadResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  try {
+    const res = await http.post<ApiResult<FileUploadResult> | undefined>(path, form, { headers });
+    const json = res.data;
+    if (json === undefined || json === null || typeof json.code !== "number") {
+      throw new ApiError(-1, "响应格式异常：非 Result 结构");
+    }
+    if (json.code !== 200) {
+      throw new ApiError(json.code, json.message);
+    }
+    return json.data;
+  } catch (e) {
+    if (e instanceof ApiError) throw e;
+    if (e instanceof AxiosError) {
+      if (e.response) {
+        throw new ApiError(-1, `HTTP ${e.response.status} ${e.response.statusText || ""}`.trim());
+      }
+      throw new ApiError(-1, e.message ? `网络请求失败：${e.message}` : "网络请求失败");
+    }
     throw new ApiError(-1, e instanceof Error ? `网络请求失败：${e.message}` : "网络请求失败");
   }
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import CommunityPublishDialog from "@/components/site/community-publish";
 import { PageHead } from "@/components/site/parts";
+import Reveal from "@/components/site/reveal";
 import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/state-blocks";
 import {
   COMMUNITY_REGIONS,
@@ -227,8 +228,9 @@ export default function CommunityBoard({ type }: { type: CommunityPostType }) {
           {status === "ready" && posts.length > 0 ? (
             <>
               <ul className="space-y-3.5">
-                {posts.map((p) => (
+                {posts.map((p, i) => (
                   <li key={p.id}>
+                    <Reveal delay={Math.min(i, 6) * 60}>
                     <Link
                       href={`/community/detail?id=${encodeURIComponent(p.id)}`}
                       className="site-card block px-5 py-4 transition-shadow hover:shadow-lg sm:px-6"
@@ -265,6 +267,7 @@ export default function CommunityBoard({ type }: { type: CommunityPostType }) {
                         </div>
                       </div>
                     </Link>
+                    </Reveal>
                   </li>
                 ))}
               </ul>
@@ -294,7 +297,7 @@ export default function CommunityBoard({ type }: { type: CommunityPostType }) {
       {/* 条件挂载：关闭即卸载，重开自然回到干净表单态（栏目预选本板块） */}
       {publishOpen ? (
         <CommunityPublishDialog
-          defaultType={type}
+          type={type}
           onClose={() => setPublishOpen(false)}
           onPublished={reload}
         />

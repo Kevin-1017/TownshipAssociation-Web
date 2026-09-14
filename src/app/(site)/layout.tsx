@@ -25,6 +25,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <main id="main" className="flex-1">
         {children}
       </main>
+      {/* footer 的渐显上浮做在组件内部（各栏错峰），此处不再整块包裹 */}
       <SiteFooter />
     </div>
   );

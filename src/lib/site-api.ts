@@ -15,7 +15,6 @@ import type {
   CommunityPostSaveRequest,
   CommunityPostType,
   DonationRecord,
-  EventDetailData,
   EventListItem,
   FoundationHome,
   Notice,
@@ -52,7 +51,7 @@ export function fetchNoticeDetail(id: string): Promise<Notice> {
 
 /**
  * 年份筛选候选 —— 下限对齐小程序事件页 YEAR_MIN=2000，上限取当前年，倒序。
- * 后端以 start_time 半开区间命中 idx_start_time 索引，前端直接透传 ?year= 即可。
+ * 后端以 start_time 半开区间命中 idx_start_time 索引，前端透传 ?yearFrom=&yearTo= 区间即可。
  */
 export const EVENT_YEARS: number[] = Array.from(
   { length: new Date().getFullYear() - 2000 + 1 },
@@ -63,8 +62,12 @@ export interface EventsQuery {
   page?: number;
   /** 后端钳制 1..50 */
   pageSize?: number;
-  /** 4 位年份；缺省不限（越界后端返 400） */
+  /** 单年过滤（旧参数，4 位数字；缺省不限，越界后端返 400）。web 已改用区间，保留兼容 */
   year?: number | null;
+  /** 年份区间起（含，4 位数字）；与 yearTo 任一侧可缺省=开区间 */
+  yearFrom?: number | null;
+  /** 年份区间止（含）；yearFrom>yearTo 后端返 400 */
+  yearTo?: number | null;
 }
 
 /** GET /tsa/events —— 事件分页（后端按 start_time 倒序；VO 无正文，status 派生） */
@@ -73,13 +76,12 @@ export function fetchEvents(query: EventsQuery = {}): Promise<PageVO<EventListIt
   sp.set("page", String(query.page ?? 1));
   sp.set("pageSize", String(query.pageSize ?? 10));
   if (query.year) sp.set("year", String(query.year));
+  if (query.yearFrom) sp.set("yearFrom", String(query.yearFrom));
+  if (query.yearTo) sp.set("yearTo", String(query.yearTo));
   return request<PageVO<EventListItem>>(`/tsa/events?${sp.toString()}`);
 }
 
-/** GET /tsa/events/{id} —— 事件详情（summary + articleUrl 公众号外链） */
-export function fetchEventDetail(id: string): Promise<EventDetailData> {
-  return request<EventDetailData>(`/tsa/events/${encodeURIComponent(id)}`);
-}
+// 事件详情（GET /tsa/events/{id}）web 端已弃用：2026-09-14 起列表直跳公众号，无详情页。
 
 // ============ 社区动态（广场） ============
 

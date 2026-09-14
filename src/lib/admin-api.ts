@@ -9,15 +9,19 @@
  * - VO 的 id 是字符串；SaveRequest 的外键 id 按数字发。金额单位元，不做 /100 换算。
  * - 日期请求字段按后端 @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")，形如 2026-08-10T00:00:00+08:00。
  */
-import { ApiError, request } from "@/lib/api";
+import { ApiError, request, uploadImage } from "@/lib/api";
 import { getAdminToken } from "@/lib/admin-auth";
 import type {
   AdminLoginVO,
+  CommunityComment,
+  CommunityPost,
   DonationRecord,
   DonationSaveRequest,
+  EventListItem,
   FoundationHome,
   Notice,
   NoticeSaveRequest,
+  PageVO,
   RewardCategorySaveRequest,
   RewardRecords,
   RewardRecordSaveRequest,
@@ -119,6 +123,101 @@ export function updateNotice(id: string, body: NoticeSaveRequest): Promise<void>
 
 export function deleteNotice(id: string): Promise<void> {
   return request<void>(`/tsa/admin/notices/${id}`, { method: "DELETE", token: token() });
+}
+
+// ============ 社区动态审核（2026-09-14 审核制） ============
+
+/** GET /tsa/admin/community/posts —— 服务端分页；status：0 待审/1 已过/2 已驳，缺省全部 */
+export function fetchAdminCommunityPosts(query: {
+  page?: number;
+  pageSize?: number;
+  status?: number | null;
+  type?: string | null;
+}): Promise<PageVO<CommunityPost>> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(query.page ?? 1));
+  sp.set("pageSize", String(query.pageSize ?? 10));
+  if (query.status != null) sp.set("status", String(query.status));
+  if (query.type) sp.set("type", query.type);
+  return request<PageVO<CommunityPost>>(`/tsa/admin/community/posts?${sp.toString()}`, {
+    token: token(),
+  });
+}
+
+/** PUT /tsa/admin/community/posts/{id}/audit —— status：1 通过 / 2 驳回（驳回可恢复） */
+export function auditCommunityPost(id: string, status: number): Promise<void> {
+  return request<void>(`/tsa/admin/community/posts/${id}/audit`, {
+    method: "PUT",
+    body: { status },
+    token: token(),
+  });
+}
+
+/** GET /tsa/admin/community/comments —— 评论管理端分页；postId 可选只看某动态下评论 */
+export function fetchAdminComments(query: {
+  page?: number;
+  pageSize?: number;
+  status?: number | null;
+  postId?: string | null;
+} = {}): Promise<PageVO<CommunityComment>> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(query.page ?? 1));
+  sp.set("pageSize", String(query.pageSize ?? 10));
+  if (query.status != null) sp.set("status", String(query.status));
+  if (query.postId) sp.set("postId", query.postId);
+  return request<PageVO<CommunityComment>>(`/tsa/admin/community/comments?${sp.toString()}`, {
+    token: token(),
+  });
+}
+
+/** PUT /tsa/admin/community/comments/{id}/audit —— status：1 通过 / 2 驳回（驳回可恢复） */
+export function auditComment(id: string, status: number): Promise<void> {
+  return request<void>(`/tsa/admin/community/comments/${id}/audit`, {
+    method: "PUT",
+    body: { status },
+    token: token(),
+  });
+}
+
+// ============ 乡会事件管理（2026-09-14 管理端配置入口，删除即下架） ============
+/** GET /tsa/admin/events —— 服务端分页；keyword 标题模糊；start_time 倒序；出参复用 C5 列表 VO */
+export function fetchAdminEvents(query: {
+  page?: number;
+  pageSize?: number;
+  keyword?: string | null;
+} = {}): Promise<PageVO<EventListItem>> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(query.page ?? 1));
+  sp.set("pageSize", String(query.pageSize ?? 10));
+  if (query.keyword) sp.set("keyword", query.keyword);
+  return request<PageVO<EventListItem>>(`/tsa/admin/events?${sp.toString()}`, { token: token() });
+}
+
+/** 事件表单 → 后端 EventSaveRequest：cover 是上传回来的相对路径；日期走 +08:00 口径 */
+export interface EventSavePayload {
+  title: string;
+  cover: string | null;
+  summary: string | null;
+  articleUrl: string | null;
+  startTime: string;
+}
+
+export function createEvent(body: EventSavePayload): Promise<string> {
+  return request<string>("/tsa/admin/events", { method: "POST", body, token: token() });
+}
+
+export function updateEvent(id: string, body: EventSavePayload): Promise<void> {
+  return request<void>(`/tsa/admin/events/${id}`, { method: "PUT", body, token: token() });
+}
+
+export function deleteEvent(id: string): Promise<void> {
+  return request<void>(`/tsa/admin/events/${id}`, { method: "DELETE", token: token() });
+}
+
+/** 事件封面上传：admin 令牌走 /tsa/admin/events/cover（微信 Bearer 的 /tsa/files 与后台无关） */
+export async function uploadEventCover(file: File): Promise<string> {
+  const r = await uploadImage("/tsa/admin/events/cover", file, token());
+  return r.path;
 }
 
 // ============ 错误与日期/金额展示辅助 ============

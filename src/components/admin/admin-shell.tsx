@@ -19,6 +19,8 @@ import {
 import { Loading, MessagePlugin } from "tdesign-react";
 import {
   BookmarkIcon,
+  CalendarIcon,
+  ChatIcon,
   DashboardIcon,
   HeartIcon,
   NotificationIcon,
@@ -34,6 +36,7 @@ import {
 import { adminLogout, adminMe, isUnauthorizedError } from "@/lib/admin-api";
 import { AdminUIProvider } from "./starter/ui-state";
 import AdminChrome from "./starter/chrome";
+import Reveal from "@/components/site/reveal";
 import type { StarterMenuItem } from "./starter/menu";
 
 const LOGIN_PATH = "/admin/login";
@@ -45,6 +48,8 @@ const MENU_ITEMS: StarterMenuItem[] = [
   { path: "/admin/records", label: "获奖记录", icon: <BookmarkIcon /> },
   { path: "/admin/donations", label: "捐赠鸣谢", icon: <HeartIcon /> },
   { path: "/admin/notices", label: "公告管理", icon: <NotificationIcon /> },
+  { path: "/admin/events", label: "乡会事件", icon: <CalendarIcon /> },
+  { path: "/admin/community", label: "动态审核", icon: <ChatIcon /> },
 ];
 
 const getNullToken = () => null;
@@ -170,7 +175,8 @@ function AuthedFrame({ children }: { children: ReactNode }) {
       onLogout={onLogout}
       breadcrumb={pageTitle ? [pageTitle] : undefined}
     >
-      {children}
+      {/* key 随路由变化重挂载，切页也重放一次「渐显上浮」（与官网区块观感同口径） */}
+      <Reveal key={pathname}>{children}</Reveal>
     </AdminChrome>
   );
 }

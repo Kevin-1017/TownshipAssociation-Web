@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * 官网顶栏：品牌印记 + 主导航。md 以上横排，窄屏折叠为菜单面板（主场景是微信内手机打开）。
@@ -24,21 +24,31 @@ function isActive(pathname: string, href: string): boolean {
 export default function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // 两态：回顶=通栏一横条（banner 在其下方）；下拉>40px=变悬浮胶囊（site.css 裸规则驱动形变）
+  const [float, setFloat] = useState(false);
 
   // 移动菜单在「导航动作发生时」收起（事件驱动），不用 effect 监听 pathname
 
+  useEffect(() => {
+    const onScroll = () => setFloat(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="site-header sticky top-0 z-40">
-      <div className="site-container flex h-14 items-center justify-between gap-3 sm:h-16">
+    <header className={`site-header${float ? " site-header--float" : ""}`}>
+      <div className="site-header__bar">
+        <div className="site-container flex h-14 items-center justify-between gap-3 sm:h-16">
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2.5"
           aria-label="广工胶己人 首页"
           onClick={() => setOpen(false)}
         >
-          <span className="site-seal site-display" aria-hidden>
-            胶
-          </span>
+          {/* 乡会 logo 徽章（public/logo.png，源图 alpha 裁方导出）；文字回退在同行的站名里 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" aria-hidden width={36} height={36} className="site-seal-img" />
           <span className="min-w-0 leading-tight">
             <span className="site-display block truncate text-base font-bold">广工胶己人</span>
             <span className="t-sub hidden truncate text-[11px] sm:block">
@@ -98,6 +108,7 @@ export default function SiteHeader() {
             )}
           </svg>
         </button>
+        </div>
       </div>
 
       {/* 窄屏导航面板 */}
@@ -105,8 +116,7 @@ export default function SiteHeader() {
         <nav
           id="site-nav-panel"
           aria-label="主导航"
-          className="border-t md:hidden"
-          style={{ borderColor: "var(--line)", backgroundColor: "var(--card)" }}
+          className="md:hidden"
         >
           <div className="site-container flex flex-col py-2">
             {NAV_ITEMS.map((item) => {

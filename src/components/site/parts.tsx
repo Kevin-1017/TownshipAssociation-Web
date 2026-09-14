@@ -49,7 +49,7 @@ export function SectionHead({
           href={moreHref}
           className="t-brand shrink-0 pb-0.5 text-sm underline-offset-4 hover:underline"
         >
-          {moreLabel} →
+          {moreLabel}
         </Link>
       ) : null}
     </div>

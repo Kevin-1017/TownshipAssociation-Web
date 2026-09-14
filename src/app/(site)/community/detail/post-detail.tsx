@@ -234,7 +234,8 @@ export default function PostDetail() {
                   style={{ color: commentErr ? "#c93756" : "var(--ink-3)" }}
                   role={commentErr ? "alert" : undefined}
                 >
-                  {commentErr ?? (commentOk ? "评论发表成功" : "评论将以昵称公开展示")}
+                  {commentErr ??
+                    (commentOk ? "已提交，审核通过后展示" : "评论经秘书处审核后以昵称公开展示")}
                 </span>
                 <button
                   type="button"

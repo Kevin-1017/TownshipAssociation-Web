@@ -11,24 +11,22 @@ export const metadata: Metadata = {
  * 流年志是官方编年史只读专栏；美食基地、校园资讯即小程序「美食基地 + 校园广场」
  * 两板块的 web 化 —— 各自独立的动态列表,可发布/点赞/评论(网站不受微信 5.7.1 限制)。
  */
-const ENTRIES: { href: string; title: string; desc: string; tag?: string }[] = [
+const ENTRIES: { href: string; title: string; desc: string }[] = [
   {
     href: "/community/chronicle",
     title: "乡会流年志",
     desc: "一届一程皆故事 · 官方编年史",
-    tag: "官方",
   },
   {
     href: "/community/food",
     title: "美食基地",
     desc: "乡友美食动态 —— 发探店、晒家乡味",
-    tag: "可发布",
+
   },
   {
     href: "/community/campus",
     title: "校园资讯",
-    desc: "校园广场动态 —— 活动召集、校友闲谈",
-    tag: "可发布",
+    desc: "校园广场动态 —— 活动召集、校友闲谈"
   },
 ];
 
@@ -45,16 +43,7 @@ export default function CommunityPage() {
                 className="site-card flex items-center gap-4 px-5 py-5 transition-shadow hover:shadow-lg sm:px-6"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="site-display flex items-center gap-2 text-base font-bold sm:text-lg">
-                    {e.title}
-                    {e.tag ? (
-                      <span
-                        className={`site-chip ${e.tag === "官方" ? "site-chip--pinned" : "site-chip--thanks"}`}
-                      >
-                        {e.tag}
-                      </span>
-                    ) : null}
-                  </p>
+                  <p className="site-display text-base font-bold sm:text-lg">{e.title}</p>
                   <p className="t-sub mt-0.5 text-sm">{e.desc}</p>
                 </div>
                 <span aria-hidden className="t-soft shrink-0 text-xl leading-none">
