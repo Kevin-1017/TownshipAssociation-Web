@@ -2,10 +2,13 @@ import axios, { AxiosError } from "axios";
 import type { ApiResult } from "@/lib/types";
 
 /**
- * 后端地址：生产环境通过 NEXT_PUBLIC_API_BASE_URL 注入（同源部署时可为空串走相对路径），
- * 本地默认 http://localhost:8080。path 需自带 /tsa 前缀，由调用方给全。
+ * 后端地址：?? 语义——空串是合法值(同源相对路径)，只有「未设置」才走兜底。
+ * 本地开发由 .env.development 注入 http://localhost:8080；
+ * 生产构建由 .env.production 注入 https://gdutgaginang.cn（显式写死，
+ * 将来静态层若单独搬家到 CDN 也只需改这一个文件重新构建）。
+ * path 需自带 /tsa 前缀，由调用方给全。
  */
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 /** 业务错误：code 为后端 Result.code（非 200）；HTTP/网络层错误统一 code = -1 */
 export class ApiError extends Error {

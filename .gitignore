@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# 这两个只含公开 URL(无密钥)，入库保证 dev/prod 构建可复现
+!.env.development
+!.env.production
 
 # vercel
 .vercel
