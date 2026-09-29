@@ -22,12 +22,12 @@ import {
   createDonation,
   deleteDonation,
   describeApiError,
-  fetchDonationRecords,
+  fetchAdminDonations,
   formatYuan,
   pickerDateToApi,
   updateDonation,
 } from "@/lib/admin-api";
-import type { DonationRecord, DonationSaveRequest } from "@/lib/types";
+import type { DonationAdminRecord, DonationSaveRequest } from "@/lib/types";
 import { numOrNull } from "@/components/admin/form-helpers";
 
 type DonationFormValues = {
@@ -38,22 +38,23 @@ type DonationFormValues = {
 };
 
 /**
- * 捐赠鸣谢管理：数据源 GET /tsa/foundation/donations（保密笔 amount 返回 null）。
- * 表单含「金额是否公开」开关：关闭后官网只显示鸣谢、不显示数字。
+ * 捐赠鸣谢管理：数据源 GET /tsa/admin/foundation/donations（amount 原值——保密只是官网展示口径）。
+ * 表单含「金额是否公开」开关：关闭后官网只显示鸣谢、不显示数字；后台表格始终显示真实金额。
  */
 export default function AdminDonationsPage() {
   const queryClient = useQueryClient();
   const donations = useQuery({
-    queryKey: ["foundation", "donations"],
-    queryFn: fetchDonationRecords,
+    queryKey: ["admin", "donations"],
+    queryFn: fetchAdminDonations,
   });
-  const rows = useMemo<DonationRecord[]>(() => donations.data ?? [], [donations.data]);
+  const rows = useMemo<DonationAdminRecord[]>(() => donations.data ?? [], [donations.data]);
 
   const [form] = Form.useForm();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<DonationRecord | null>(null);
+  const [editing, setEditing] = useState<DonationAdminRecord | null>(null);
 
   const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "donations"] });
     queryClient.invalidateQueries({ queryKey: ["foundation", "donations"] });
     queryClient.invalidateQueries({ queryKey: ["foundation", "home"] });
   };
@@ -80,7 +81,7 @@ export default function AdminDonationsPage() {
     onError: (e) => MessagePlugin.error(describeApiError(e, "删除捐赠记录失败")),
   });
 
-  const openDialog = (row: DonationRecord | null) => {
+  const openDialog = (row: DonationAdminRecord | null) => {
     setEditing(row);
     setDialogOpen(true);
   };
@@ -104,27 +105,30 @@ export default function AdminDonationsPage() {
     {
       colKey: "amount",
       title: "金额（元）",
-      width: 180,
-      render: ({ row }: { row: DonationRecord }) =>
-        row.amount === null || row.amount === undefined ? (
-          <Tag theme="default" variant="light" size="small">
-            金额保密
-          </Tag>
-        ) : (
-          formatYuan(row.amount)
-        ),
+      width: 220,
+      // 管理端显示原值；保密笔仅加「官网不公开」小标提示展示口径
+      cell: ({ row }: { row: DonationAdminRecord }) => (
+        <Space size="small">
+          <span>{row.amount === null || row.amount === undefined ? "-" : formatYuan(row.amount)}</span>
+          {row.amountVisible === false && (
+            <Tag theme="default" variant="light" size="small">
+              官网不公开
+            </Tag>
+          )}
+        </Space>
+      ),
     },
     {
       colKey: "date",
       title: "捐赠日期",
       width: 140,
-      render: ({ row }: { row: DonationRecord }) => apiToPickerDate(row.date) || "-",
+      cell: ({ row }: { row: DonationAdminRecord }) => apiToPickerDate(row.date) || "-",
     },
     {
       colKey: "op",
       title: "操作",
       width: 160,
-      render: ({ row }: { row: DonationRecord }) => (
+      cell: ({ row }: { row: DonationAdminRecord }) => (
         <Space size="small">
           <Button theme="primary" variant="text" size="small" onClick={() => openDialog(row)}>
             编辑
@@ -147,8 +151,6 @@ export default function AdminDonationsPage() {
   const loadError = donations.isError
     ? describeApiError(donations.error, "捐赠数据加载失败")
     : null;
-  // 编辑保密笔：接口不回传金额原值，需要重新录入
-  const editingSecret = editing !== null && (editing.amount === null || editing.amount === undefined);
 
   return (
     <div>
@@ -192,8 +194,8 @@ export default function AdminDonationsPage() {
           initialData={{
             donorName: editing?.donorName,
             amount: editing?.amount ?? undefined,
-            // 新增默认公开金额；编辑时以接口口径反推（amount 为 null 即保密）
-            amountVisible: editing ? editing.amount !== null && editing.amount !== undefined : true,
+            // 编辑时直接用接口的 amountVisible 字段（管理端读接口回原值，不再靠 amount 是否为 null 反推）
+            amountVisible: editing ? editing.amountVisible === true : true,
             donationDate: editing ? apiToPickerDate(editing.date) : undefined,
           }}
         >
@@ -208,11 +210,7 @@ export default function AdminDonationsPage() {
             label="捐赠金额（元）"
             name="amount"
             rules={[{ required: true, message: "请填写捐赠金额（元）" }]}
-            help={
-              editingSecret
-                ? "该笔金额此前未公开，接口不回传原值，请重新填写实际金额"
-                : "金额单位为元，不做换算"
-            }
+            help="金额单位为元，不做换算；保密只影响官网展示，后台始终可见原值"
           >
             <InputNumber min={0} theme="normal" placeholder="如：2000000" style={{ width: "100%" }} />
           </Form.FormItem>

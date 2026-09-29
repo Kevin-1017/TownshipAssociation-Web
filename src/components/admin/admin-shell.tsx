@@ -49,7 +49,15 @@ const MENU_ITEMS: StarterMenuItem[] = [
   { path: "/admin/donations", label: "捐赠鸣谢", icon: <HeartIcon /> },
   { path: "/admin/notices", label: "公告管理", icon: <NotificationIcon /> },
   { path: "/admin/events", label: "乡会事件", icon: <CalendarIcon /> },
-  { path: "/admin/community", label: "动态审核", icon: <ChatIcon /> },
+  {
+    path: "/admin/community",
+    label: "动态审核",
+    icon: <ChatIcon />,
+    children: [
+      { path: "/admin/community/food", label: "美食基地" },
+      { path: "/admin/community/campus", label: "校园资讯" },
+    ],
+  },
 ];
 
 const getNullToken = () => null;
@@ -166,7 +174,10 @@ function AuthedFrame({ children }: { children: ReactNode }) {
     }
   };
 
-  const pageTitle = MENU_ITEMS.find((item) => item.path === pathname)?.label;
+  // 面包屑标题：平铺一级 + 二级后按 pathname 精确匹配（分组父项仅作展开容器，不参与匹配跳转）
+  const pageTitle = MENU_ITEMS.flatMap((item) => [item, ...(item.children ?? [])]).find(
+    (item) => item.path === pathname,
+  )?.label;
 
   return (
     <AdminChrome

@@ -1,0 +1,6 @@
+{
+  "name": "ts-plugin-css-modules-def",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js"
+}

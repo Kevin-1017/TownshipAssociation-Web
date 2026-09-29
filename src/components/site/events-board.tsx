@@ -41,7 +41,6 @@ function EventCard({ event }: { event: EventListItem }) {
   const body = (
     <>
       {cover ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={cover} alt="" loading="lazy" className="site-event-cover" />
       ) : (
         <span className="site-event-cover site-event-cover--empty site-display" aria-hidden>

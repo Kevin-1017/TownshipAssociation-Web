@@ -28,6 +28,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "ts-plugin-css-modules-def": "file:scripts/ts-plugin-css-modules-def",
+    "typescript": "^5",
+    "typescript-plugin-css-modules": "^5.2.0"
   }
 }

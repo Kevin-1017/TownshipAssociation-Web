@@ -129,7 +129,7 @@ export default function AdminEventsPage() {
       colKey: "cover",
       title: "封面",
       width: 88,
-      render: ({ row }: { row: EventListItem }) => {
+      cell: ({ row }: { row: EventListItem }) => {
         const url = buildFileUrl(row.cover);
         if (!url) return <span className="text-gray-400">无</span>;
         return (
@@ -147,7 +147,7 @@ export default function AdminEventsPage() {
       colKey: "title",
       title: "标题",
       width: 260,
-      render: ({ row }: { row: EventListItem }) => (
+      cell: ({ row }: { row: EventListItem }) => (
         <span className="block truncate" title={row.title}>
           {row.title}
         </span>
@@ -157,7 +157,7 @@ export default function AdminEventsPage() {
       colKey: "articleUrl",
       title: "公众号链接",
       width: 110,
-      render: ({ row }: { row: EventListItem }) =>
+      cell: ({ row }: { row: EventListItem }) =>
         row.articleUrl ? (
           <a href={row.articleUrl} target="_blank" rel="noopener noreferrer">
             <Tag theme="primary" variant="light" size="small">
@@ -174,13 +174,13 @@ export default function AdminEventsPage() {
       colKey: "startTime",
       title: "开始时间",
       width: 160,
-      render: ({ row }: { row: EventListItem }) => formatDateTime(row.startTime),
+      cell: ({ row }: { row: EventListItem }) => formatDateTime(row.startTime),
     },
     {
       colKey: "status",
       title: "展示态",
       width: 90,
-      render: ({ row }: { row: EventListItem }) =>
+      cell: ({ row }: { row: EventListItem }) =>
         row.status === "upcoming" ? (
           <Tag theme="success" variant="light" size="small">
             近期
@@ -195,7 +195,7 @@ export default function AdminEventsPage() {
       colKey: "op",
       title: "操作",
       width: 150,
-      render: ({ row }: { row: EventListItem }) => (
+      cell: ({ row }: { row: EventListItem }) => (
         <Space size="small">
           <Button theme="primary" variant="text" size="small" onClick={() => openDialog(row)}>
             编辑
@@ -318,7 +318,6 @@ export default function AdminEventsPage() {
             <div className="flex items-center gap-3">
               {cover ? (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={buildFileUrl(cover) ?? undefined}
                     alt="封面预览"

@@ -2,6 +2,12 @@
 
 Next.js（App Router）+ Tailwind CSS（官网）+ TDesign React（后台）+ TanStack Query，单域名、静态导出（`output: 'export'`）。后端为同仓库的 `tsa-api`（Spring Boot，端口 8080，接口前缀 `/tsa`）。
 
+## 文档
+
+- [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md) —— 技术事实:选型理由、版本约束、架构、部署、踩坑
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) —— 唯一编码规范出处
+- [docs/API.md](docs/API.md) —— Web 消费的接口契约（改接口须与 `lib/types.ts`、`lib/*-api.ts` 三处同步）
+
 ## 目录结构
 
 - `src/app/(site)/**` —— 官网页面（Tailwind 风格）
@@ -26,7 +32,7 @@ npm run build   # 纯静态产物输出到 out/（无 Node 服务端）
 
 ## 部署
 
-`npm run build` 产出 `out/` 目录，把 `out/` 整体上传到香港服务器的 Nginx 站点根目录即可；同一域名下由 Nginx 将 `/tsa` 路径反向代理到本机/内网的 tsa-api（8080），前端与 API 同源、单域名，无需 Node 运行时。构建前通过环境变量 `NEXT_PUBLIC_API_BASE_URL` 注入后端地址：同源反代方案下设为站点自身的公网域名（如 `https://your-domain.com`，请求即打到 `https://your-domain.com/tsa/...`）；未设置时默认 `http://localhost:8080`（仅适合本地开发）。Nginx 静态站点建议配 `try_files $uri $uri.html $uri/index.html /index.html;`（`out/` 同时生成 `admin.html` 与 `admin/index.html` 两种形态）。
+`npm run build` 产出 `out/` 目录，把 `out/` 整体上传到新加坡服务器的 Nginx 站点根目录即可；同一域名下由 Nginx 将 `/tsa` 路径反向代理到本机/内网的 tsa-api（8080），前端与 API 同源、单域名，无需 Node 运行时。构建前通过环境变量 `NEXT_PUBLIC_API_BASE_URL` 注入后端地址：同源反代方案下设为站点自身的公网域名（如 `https://your-domain.com`，请求即打到 `https://your-domain.com/tsa/...`）；未设置时默认 `http://localhost:8080`（仅适合本地开发）。Nginx 静态站点建议配 `try_files $uri $uri.html $uri/index.html /index.html;`（`out/` 同时生成 `admin.html` 与 `admin/index.html` 两种形态）。
 
 ## 约定
 

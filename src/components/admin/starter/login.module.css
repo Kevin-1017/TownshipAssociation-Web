@@ -10,14 +10,16 @@
 
 .loginWrapper.light {
   background-color: white;
-  background-image: url("./assets/assets-login-bg-white.png");
+  /* 校园照上叠一层半透明白,保证表单文字可读 */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)),
+    url("/home-hero.jpg");
 }
 
 .loginContainer {
   position: absolute;
   top: 22%;
-  left: 5%;
-  min-height: 500px;
+  right: 5%;
   line-height: 22px;
 }
 
@@ -33,8 +35,9 @@
   font-size: 14px;
   position: absolute;
   left: 5%;
+  padding-right: 5px;
   bottom: 64px;
-  color: var(--td-text-color-secondary);
+  color: var(--td-text-color-primary);
 }
 
 @media screen and (max-height: 762px) {
@@ -61,6 +64,16 @@
   font-size: 20px;
   font-weight: 600;
   color: var(--td-text-color-primary);
+}
+
+/* 乡会徽章（public/logo.png）：与官网 site-seal-img 同款的圆形裁切 */
+.logoSeal {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 82, 217, 0.25);
 }
 
 .operationsContainer {
@@ -90,7 +103,10 @@
 }
 
 .btnContainer {
-  margin-top: 48px;
+  /* 注意:不能用 margin-top —— TDesign 全局规则
+     `.t-form:not(.t-form-inline) > .t-form__item:last-of-type { margin: 0 }`
+     特异性更高,会把末项 margin 整体清零;改用 padding-top 绕开。 */
+  padding-top: 24px;
 }
 
 @media screen and (max-width: 700px) {

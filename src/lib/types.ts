@@ -65,6 +65,18 @@ export interface DonationRecord {
   date: string;
 }
 
+/** 捐赠记录（管理端视图，DonationAdminVO）：amount 为真实金额——保密仅是官网展示口径 */
+export interface DonationAdminRecord {
+  id: string;
+  donorName: string;
+  /** 捐赠金额（元），原值；保密笔同样返回真实数字 */
+  amount: number | null;
+  /** 金额是否在官网公开显示（false = 官网只鸣谢不出数字） */
+  amountVisible: boolean | null;
+  /** 捐赠日期（ISO 8601 带时区） */
+  date: string;
+}
+
 // ============ 管理端 Save 请求（字段镜像后端 DTO） ============
 
 /** 奖项类别保存请求（RewardCategorySaveRequest） */

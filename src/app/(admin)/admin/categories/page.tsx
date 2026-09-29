@@ -118,20 +118,20 @@ export default function AdminCategoriesPage() {
       colKey: "sponsor",
       title: "赞助人/捐赠方",
       width: 160,
-      render: ({ row }: { row: CategoryRow }) => row.sponsor || "-",
+      cell: ({ row }: { row: CategoryRow }) => row.sponsor || "-",
     },
     {
       colKey: "amount",
       title: "奖金总额（元）",
       width: 140,
-      render: ({ row }: { row: CategoryRow }) => formatYuan(row.amount),
+      cell: ({ row }: { row: CategoryRow }) => formatYuan(row.amount),
     },
     { colKey: "recordCount", title: "获奖记录数", width: 110 },
     {
       colKey: "op",
       title: "操作",
       width: 160,
-      render: ({ row }: { row: CategoryRow }) => (
+      cell: ({ row }: { row: CategoryRow }) => (
         <Space size="small">
           <Button theme="primary" variant="text" size="small" onClick={() => openDialog(row)}>
             编辑

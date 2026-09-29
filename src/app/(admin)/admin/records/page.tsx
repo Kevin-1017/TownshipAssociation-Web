@@ -103,20 +103,20 @@ export default function AdminRecordsPage() {
       title: "奖项类别",
       width: 200,
       ellipsis: true,
-      render: ({ row }: { row: RewardRecord }) => row.categoryName || "-",
+      cell: ({ row }: { row: RewardRecord }) => row.categoryName || "-",
     },
     { colKey: "recipient", title: "获奖人", width: 160 },
     {
       colKey: "amount",
       title: "奖金（元）",
       width: 140,
-      render: ({ row }: { row: RewardRecord }) => formatYuan(row.amount ?? null),
+      cell: ({ row }: { row: RewardRecord }) => formatYuan(row.amount ?? null),
     },
     {
       colKey: "op",
       title: "操作",
       width: 160,
-      render: ({ row }: { row: RewardRecord }) => (
+      cell: ({ row }: { row: RewardRecord }) => (
         <Space size="small">
           <Button theme="primary" variant="text" size="small" onClick={() => openDialog(row)}>
             编辑

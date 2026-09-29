@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import LeaderShowcaseSection from "@/components/site/leader-showcase";
 import Reveal from "@/components/site/reveal";
 import RevealGroup from "@/components/site/reveal-group";
@@ -28,9 +29,9 @@ export default function SiteHomePage() {
     <div>
       {/* ---------- Hero ---------- */}
       <section className="site-hero" aria-label="网站简介">
-        {/* 首屏 LCP 直出原生 img（域名固定 /public，不走 buildFileUrl）；纱层保白字对比度 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/home-hero.jpg" alt="" aria-hidden className="site-hero__bg" fetchPriority="high" />
+        {/* 首屏 LCP 背景照（public/home-hero.jpg 2848x1600，域名固定 /public，不走 buildFileUrl；
+            unoptimized 下 Image 即直出 img，显式 eager 防 Image 默认 lazy 拖 LCP）；纱层保白字对比度 */}
+        <Image src="/home-hero.jpg" alt="" aria-hidden width={2848} height={1600} loading="eager" fetchPriority="high" className="site-hero__bg" />
         <span className="site-hero__scrim" aria-hidden />
         <div className="site-container relative z-10 py-12 sm:py-16">
           {/* 首屏逐行入场：进视口即触发（页顶时立即播），一行慢于一行 */}
@@ -88,7 +89,6 @@ export default function SiteHomePage() {
                   <>
                     {cover ? (
                       // 封面域名不定（/tsa/files 相对址或外链），不进 next/image 白名单，用原生 img 懒加载
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={cover}
                         alt=""

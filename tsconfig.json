@@ -16,6 +16,12 @@
     "plugins": [
       {
         "name": "next"
+      },
+      {
+        "name": "typescript-plugin-css-modules"
+      },
+      {
+        "name": "ts-plugin-css-modules-def"
       }
     ],
     "paths": {

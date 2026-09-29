@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Reveal from "@/components/site/reveal";
 import RevealGroup from "@/components/site/reveal-group";
 
@@ -27,8 +28,7 @@ export default function SiteFooter() {
           <Reveal className="max-w-sm">
             <div className="flex items-center gap-2.5">
               {/* 乡会 logo 徽章（与页头同款图；footer 深底上白色圆盘自带对比） */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="" aria-hidden width={36} height={36} className="site-seal-img" />
+              <Image src="/logo.png" alt="" aria-hidden width={36} height={36} className="site-seal-img" />
               <div className="leading-tight">
                 <p className="site-display text-base font-bold">广工胶己人</p>
                 <p className="t-footer-sub text-xs">广东工业大学潮阳潮南校友会</p>

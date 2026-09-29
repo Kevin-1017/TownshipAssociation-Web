@@ -99,7 +99,7 @@ export default function AdminNoticesPage() {
       colKey: "title",
       title: "标题",
       width: 280,
-      render: ({ row }: { row: Notice }) => (
+      cell: ({ row }: { row: Notice }) => (
         <Space size="small">
           {row.pinned && (
             <Tag theme="warning" variant="light" size="small">
@@ -115,7 +115,7 @@ export default function AdminNoticesPage() {
     {
       colKey: "summary",
       title: "摘要",
-      render: ({ row }: { row: Notice }) => (
+      cell: ({ row }: { row: Notice }) => (
         <span className="block truncate text-gray-600" title={row.summary ?? undefined}>
           {row.summary || "-"}
         </span>
@@ -125,13 +125,13 @@ export default function AdminNoticesPage() {
       colKey: "publishedAt",
       title: "发布时间",
       width: 160,
-      render: ({ row }: { row: Notice }) => formatDateTime(row.publishedAt),
+      cell: ({ row }: { row: Notice }) => formatDateTime(row.publishedAt),
     },
     {
       colKey: "op",
       title: "操作",
       width: 160,
-      render: ({ row }: { row: Notice }) => (
+      cell: ({ row }: { row: Notice }) => (
         <Space size="small">
           <Button theme="primary" variant="text" size="small" onClick={() => openDialog(row)}>
             编辑

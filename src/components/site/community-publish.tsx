@@ -218,7 +218,6 @@ export default function CommunityPublishDialog({
             <p className="t-soft mb-1.5 text-sm font-medium">配图（选填 · 最多 1 张 · jpg/png/webp ≤2MB）</p>
             {imagePath ? (
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={buildFileUrl(imagePath) ?? undefined}
                   alt="配图预览"

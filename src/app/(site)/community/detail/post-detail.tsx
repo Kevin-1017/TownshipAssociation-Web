@@ -168,7 +168,6 @@ export default function PostDetail() {
             {post.images.map((src) => (
               <a key={src} href={src} target="_blank" rel="noopener noreferrer" className="block">
                 {/* 外链图域名不定（小程序头像/上传域），不进 next/image 白名单，用原生 img 懒加载 */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={src}
                   alt="动态配图"

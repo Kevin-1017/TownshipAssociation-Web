@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -47,8 +48,7 @@ export default function SiteHeader() {
           onClick={() => setOpen(false)}
         >
           {/* 乡会 logo 徽章（public/logo.png，源图 alpha 裁方导出）；文字回退在同行的站名里 */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" aria-hidden width={36} height={36} className="site-seal-img" />
+          <Image src="/logo.png" alt="" aria-hidden width={36} height={36} loading="eager" className="site-seal-img" />
           <span className="min-w-0 leading-tight">
             <span className="site-display block truncate text-base font-bold">广工胶己人</span>
             <span className="t-sub hidden truncate text-[11px] sm:block">

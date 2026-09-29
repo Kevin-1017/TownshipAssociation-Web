@@ -6,20 +6,18 @@
  * 模板的注册/扫码/手机号通道为演示功能，未接线，原版保留在 src/tdesign-starter/。
  */
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button, Form, Input, MessagePlugin } from "tdesign-react";
 import {
   BrowseIcon,
   BrowseOffIcon,
-  HelpCircleIcon,
   LockOnIcon,
-  LogoGithubIcon,
   UserIcon,
 } from "tdesign-icons-react";
 import cn from "classnames";
 import { setAdminToken, setAdminUsername } from "@/lib/admin-auth";
 import { adminLogin, describeLoginError } from "@/lib/admin-api";
-import TMark from "@/components/admin/starter/logo";
 import style from "@/components/admin/starter/login.module.css";
 
 interface LoginFormValues {
@@ -53,35 +51,12 @@ export default function AdminLoginPage() {
     }
   };
 
-  const gotoGitHub = () => window.open("https://github.com/tencent/tdesign-react-starter");
-  const gotoHelper = () => window.open("http://tdesign.tencent.com/starter/docs/react/get-started");
-
   return (
     <div className={cn(style.loginWrapper, style.light)}>
       <header className={style.loginHeader}>
         <div className={style.logoBox}>
-          <TMark />
+          <Image src="/logo.png" alt="" aria-hidden width={32} height={32} className={style.logoSeal} />
           广工胶己人
-        </div>
-        <div className={style.operationsContainer}>
-          <Button
-            className={style.operationsButton}
-            theme="default"
-            shape="square"
-            variant="text"
-            onClick={gotoGitHub}
-          >
-            <LogoGithubIcon className={style.icon} />
-          </Button>
-          <Button
-            className={style.operationsButton}
-            theme="default"
-            shape="square"
-            variant="text"
-            onClick={gotoHelper}
-          >
-            <HelpCircleIcon className={style.icon} />
-          </Button>
         </div>
       </header>
 

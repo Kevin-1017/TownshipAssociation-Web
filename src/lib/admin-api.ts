@@ -17,6 +17,7 @@ import type {
   CommunityPost,
   DonationRecord,
   DonationSaveRequest,
+  DonationAdminRecord,
   EventListItem,
   FoundationHome,
   Notice,
@@ -64,6 +65,13 @@ export function fetchRewardRecords(): Promise<RewardRecords> {
 
 export function fetchDonationRecords(): Promise<DonationRecord[]> {
   return request<DonationRecord[]>("/tsa/foundation/donations");
+}
+
+// ============ 管理端读（需 admin token） ============
+
+/** GET /tsa/admin/foundation/donations —— 管理端捐赠明细：amount 为原值（保密只作用于官网展示） */
+export function fetchAdminDonations(): Promise<DonationAdminRecord[]> {
+  return request<DonationAdminRecord[]>("/tsa/admin/foundation/donations", { token: token() });
 }
 
 // ============ 基金会管理写接口 ============
@@ -153,18 +161,20 @@ export function auditCommunityPost(id: string, status: number): Promise<void> {
   });
 }
 
-/** GET /tsa/admin/community/comments —— 评论管理端分页；postId 可选只看某动态下评论 */
+/** GET /tsa/admin/community/comments —— 评论管理端分页；postId 可选只看某动态下评论；type 按所属动态栏目过滤 */
 export function fetchAdminComments(query: {
   page?: number;
   pageSize?: number;
   status?: number | null;
   postId?: string | null;
+  type?: string | null;
 } = {}): Promise<PageVO<CommunityComment>> {
   const sp = new URLSearchParams();
   sp.set("page", String(query.page ?? 1));
   sp.set("pageSize", String(query.pageSize ?? 10));
   if (query.status != null) sp.set("status", String(query.status));
   if (query.postId) sp.set("postId", query.postId);
+  if (query.type) sp.set("type", query.type);
   return request<PageVO<CommunityComment>>(`/tsa/admin/community/comments?${sp.toString()}`, {
     token: token(),
   });
