@@ -107,7 +107,7 @@ import type { Notice } from "@/lib/types";
     null 字段**整个键缺省** → TS 写 `field?: T | null`;
   - 不带(如 `EventListItem`):可空字段**键恒在值为 null** → TS 写 `field: T | null`。
     写错的后果是消费处 `?.` 与 `??` 用错位置,旧后端未下发新键时整页白屏。
-- **对尚未部署的契约字段按「可能缺键」容错**(`articleUrl` 等,注释标契约日期),
+- **对较新契约的字段按「可能缺键」容错**(`articleUrl` 等,注释标契约日期),
   线上旧 jar 不会等你。
 - 禁止 `any`;确需收窄用 `unknown` + 判型,绕 ESLint 必须留行内原因注释。
 - 枚举语义用字符串字面量联合(`type EventStatus = "upcoming" | "past"`),不用 TS `enum`。

@@ -1,26 +1,21 @@
 # 部署手册(tsa-api / tsa-web → 生产服务器)
 
 > 本手册只写**流程与方法**,不记逐次部署日志;版本号、回滚文件名等时点性信息一律不入本文。
-
-> 本文所有条目均为 2026-09-29 在服务器实测确认;凡「未验证」字样处,执行前须先验证。
-> ⚠️ 仓库其它文档(AGENTS.md 等)若与本文冲突,**以本文为准并顺手改掉旧文**:
-> 服务器不是香港而是**新加坡 43.156.74.60**(gdutgaginang.cn 现解析于此);
-> 密钥是 **`kevin.pem`**(Windows 本机位于 Downloads),不是 `lighthub.pem`;
-> 数据库实名 **`tsa`**,不是 `tsa_prod`;jar 实名 **`/opt/tsa/api/tsa-api.jar`**。
+> 下列环境事实均为服务器实测;隔了较长时间再部署时,动手前先复验一遍。
 
 ---
 
-## 1. 现状(已验证)
+## 1. 环境事实
 
 | 项 | 值 |
 | --- | --- |
 | 服务器 | 腾讯云轻量应用服务器,新加坡,Ubuntu Server 24.04 LTS(主机名 `VM-0-4-ubuntu`) |
-| 登录 | `ssh -i <kevin.pem路径> ubuntu@43.156.74.60` ✓ 实测可连 |
-| sudo | ✅ 2026-09-29 已按 §2 路 A 解锁(`/etc/sudoers.d/91-ubuntu-nopasswd`),`sudo -n` 全自动可用 |
+| 登录 | `ssh -i <kevin.pem路径> ubuntu@43.156.74.60`(kevin.pem 在 Windows 本机 Downloads) |
+| sudo | ubuntu 免密 sudo 已配置(`sudo -n` 全自动可用) |
 | 后端服务 | systemd unit `/etc/systemd/system/tsa-api.service`:root 运行,`ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar /opt/tsa/api/tsa-api.jar`,`EnvironmentFile=/opt/tsa/api/env`(600 root,含 `SPRING_PROFILES_ACTIVE/DATASOURCE_URL/USERNAME/PASSWORD`、`SERVER_FORWARDHEADERSSTRATEGY`、`TSA_FILES_DIR`、`TZ`、knife4j 开关等),`Restart=on-failure` |
-| 数据库 | 本机 MySQL 8 系(`mysql.service`),**库名 `tsa`**;连接串 `jdbc:mysql://localhost:3306/tsa?...serverTimezone=Asia/Shanghai`(凭据在 `/opt/tsa/api/env`) |
-| Java(服务器) | OpenJDK **25.0.4**(与仓库 `java.version=25` 匹配,可直接跑新 jar) |
-| Nginx | 站点配置 `/etc/nginx/sites-enabled/tsa`;`server_name gdutgaginang.cn www.gdutgaginang.cn`;静态根 **`/opt/tsa/web`**;`/tsa` 反代 `http://127.0.0.1:8080`;页面 `try_files $uri $uri/index.html $uri.html =404` |
+| 数据库 | 本机 MySQL 8 系(`mysql.service`),库名 `tsa`;连接串 `jdbc:mysql://localhost:3306/tsa?...serverTimezone=Asia/Shanghai`(凭据在 `/opt/tsa/api/env`) |
+| Java(服务器) | OpenJDK 25.0.4,与仓库 `java.version=25` 匹配,新 jar 可直接跑 |
+| Nginx | 站点配置 `/etc/nginx/sites-enabled/tsa`;`server_name gdutgaginang.cn www.gdutgaginang.cn`;静态根 `/opt/tsa/web`(属主 `ubuntu:ubuntu`);`/tsa` 反代 `http://127.0.0.1:8080`;页面 `try_files $uri $uri/index.html $uri.html =404` |
 
 ### 如何判断线上 jar 是否落后于本地 HEAD(通用)
 
@@ -37,16 +32,12 @@
 2. **DB 列就位**:新提交带来的迁移列在 `tsa` 库 `information_schema.columns` 中确实存在;
 3. **路由行为**:新端点无 token 访问应返回 Sa-Token 的 401 壳(`{"code":401,...}`,HTTP 层 200),而非 404。
 
-> 勘误:本文旧版写过 build-info.txt 验证法——Api 仓库没有该机制,勿再引用。
-
 ---
 
-## 2. 解锁自动化:二选一 ✅ 已走「路 A」完成解锁(2026-09-29)
+## 2. 前置:sudo 免密
 
-历史背景:所有生产操作要 root 读 `/opt/tsa/api/env`、写 `/opt/tsa/api/`、`systemctl restart`。
-
-**路 A(推荐,一次解锁长期自动化)**
-你(或有密码的人)在服务器终端(腾讯云控制台实例卡片「登录」→ OrcaTerm)执行:
+部署全程需要 `sudo`。若 `sudo -n true` 报错(免密失效),在腾讯云控制台实例卡片
+「登录」→ OrcaTerm 执行下面三行即可恢复:
 
 ```bash
 sudo -s
@@ -55,18 +46,16 @@ chmod 440 /etc/sudoers.d/91-ubuntu-nopasswd
 exit
 ```
 
-完成后告诉我,我即可从本机全自动执行 §3/§4。
-(安全性说明:已禁密码登录、仅密钥可入,ubuntu 被攻破≈root 被攻破,风险增量可接受。)
-
-**路 B(不解锁,我出逐条命令)**
-我把 §3/§4 写成可整段粘贴的脚本,你在 OrcaTerm 里 `sudo -i` 后粘贴,把输出回传给我判读。
+(安全性:服务器已禁密码登录、仅密钥可入,ubuntu 被攻破≈root 被攻破,风险增量可接受。)
 
 ---
 
-## 3. 后端部署 runbook(前提:上一节验证显示线上 jar ≠ 本地 HEAD,或你要把新改动推上去)
+## 3. 后端部署
+
+前提:上节验证显示线上 jar 落后于本地 HEAD。
 
 > 全程 root 执行。本地先 `./mvnw -q package -DskipTests`,产物在
-> `target/tsa-api-0.0.1-SNAPSHOT.jar`(**不是**旧文档写的 `TownshipAssociation-Api-*.jar`)。
+> `target/tsa-api-0.0.1-SNAPSHOT.jar`。
 
 ```bash
 # 0) 本机上传(scp 用 kevin.pem)
@@ -85,12 +74,12 @@ install -o root -m 644 /home/ubuntu/tsa-api-0.0.1-SNAPSHOT.jar /opt/tsa/api/tsa-
 systemctl restart tsa-api
 journalctl -u tsa-api -n 50 --no-pager    # 确认 Started,无堆栈异常
 
-# 4) 冒烟见 §6;失败回滚:
+# 4) 冒烟见第 6 节;失败回滚:
 # cp -a /opt/tsa/api/tsa-api.jar.bak.xxx /opt/tsa/api/tsa-api.jar && systemctl restart tsa-api
 # (SQL 迁移若已跑,回滚 jar 即可;迁移语句为加列型,旧 jar 能容忍新列——回滚前确认此前提)
 ```
 
-## 4. 前端部署 runbook(web 静态)
+## 4. 前端部署(web 静态)
 
 本地(Web 仓库):`npx tsc --noEmit && npm run lint && npm run build`
 → 产物 `out/`(postbuild 自动生成 RSC 扁平镜像,控制台应打印 `[flatten-rsc] 生成扁平 RSC 镜像文件 N 个`)。
@@ -100,10 +89,10 @@ journalctl -u tsa-api -n 50 --no-pager    # 确认 Started,无堆栈异常
 tar czf out.tgz -C out .
 scp -i <kevin.pem> out.tgz ubuntu@43.156.74.60:/home/ubuntu/
 
-# 服务器:站点根是 /opt/tsa/web(nginx root 实测),先备份再替换
+# 服务器:站点根是 /opt/tsa/web,先备份再替换
 mv /opt/tsa/web /opt/tsa/web.bak.$(date +%F-%H%M)
 mkdir /opt/tsa/web && tar xzf /home/ubuntu/out.tgz -C /opt/tsa/web
-chown -R ubuntu:ubuntu /opt/tsa/web   # 实测现网属主就是 ubuntu:ubuntu(非 www-data),照抄即可
+chown -R ubuntu:ubuntu /opt/tsa/web
 ```
 
 > 注意:`.env.production` 的 `NEXT_PUBLIC_API_BASE_URL` 留空 = 同源相对路径,
@@ -128,6 +117,4 @@ chown -R ubuntu:ubuntu /opt/tsa/web   # 实测现网属主就是 ubuntu:ubuntu(�
 
 ## 7. 待办/存疑
 
-- [ ] 旧文档纠偏:`TownshipAssociation-Api` 仓库的 AGENTS/README、Web `docs/TECHNOLOGY.md` §6
-      「香港/lighthub/`/tsa` 目录结构」等以本文为准改写;
 - [ ] `tsa` 库的逻辑备份 cron:现网是否存在**未验证**。

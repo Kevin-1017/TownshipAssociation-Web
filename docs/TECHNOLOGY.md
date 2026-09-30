@@ -74,8 +74,8 @@ npm run dev        # http://localhost:3000
 ```
 
 本地开发默认连**本机 8080 的 tsa-api**(`.env.development` 写死
-`NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`,因为审核制等新接口线上后端尚未部署,
-连线上会被旧 jar 忽略)。服务器 8080 端口**不对公网开放**,想验线上接口走
+`NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`,避免本地调试的写操作打到生产库)。
+服务器 8080 端口**不对公网开放**,想验线上接口走
 `https://www.gdutgaginang.cn`(同源 `/tsa` 反代)。
 
 | 命令 | 作用 |
