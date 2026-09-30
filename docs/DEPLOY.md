@@ -1,8 +1,6 @@
 # 部署手册(tsa-api / tsa-web → 生产服务器)
 
-> **2026-09-29 17:5x 部署完成**:后端 `7f89455`(审核台统一审核态+栏目过滤、捐赠管理端原值)、
-> 前端 `2e950f2`(栏目分台、登录页改版、docs)均已上线并冒烟通过;
-> 回滚资产:`/opt/tsa/api/tsa-api.jar.bak.2026-09-29-1752`(旧 jar)、`/root/tsa-backup-2026-09-29-1752.sql`(mysqldump)、`/opt/tsa/web.bak.2026-09-29-1752`(旧站)。
+> 本手册只写**流程与方法**,不记逐次部署日志;版本号、回滚文件名等时点性信息一律不入本文。
 
 > 本文所有条目均为 2026-09-29 在服务器实测确认;凡「未验证」字样处,执行前须先验证。
 > ⚠️ 仓库其它文档(AGENTS.md 等)若与本文冲突,**以本文为准并顺手改掉旧文**:
@@ -23,32 +21,23 @@
 | 数据库 | 本机 MySQL 8 系(`mysql.service`),**库名 `tsa`**;连接串 `jdbc:mysql://localhost:3306/tsa?...serverTimezone=Asia/Shanghai`(凭据在 `/opt/tsa/api/env`) |
 | Java(服务器) | OpenJDK **25.0.4**(与仓库 `java.version=25` 匹配,可直接跑新 jar) |
 | Nginx | 站点配置 `/etc/nginx/sites-enabled/tsa`;`server_name gdutgaginang.cn www.gdutgaginang.cn`;静态根 **`/opt/tsa/web`**;`/tsa` 反代 `http://127.0.0.1:8080`;页面 `try_files $uri $uri/index.html $uri.html =404` |
-| 当前线上 jar | 构建/部署于 **2026-09-15 01:25**(+08:00),40,808,791 字节,属主 `ubuntu` |
-| 本地仓库 HEAD | `c6dd22c`(提交时间 **2026-09-15 01:31**),即「审核制+事件年份区间」那一版 |
-| 本机 jar 产物 | `target/tsa-api-0.0.1-SNAPSHOT.jar` 40,811,646 字节(2026-09-29,`./mvnw -q package -DskipTests` 构建,HEAD=c6dd22c) |
 
-### 版本判断 ✅ 已定案(2026-09-29)
+### 如何判断线上 jar 是否落后于本地 HEAD(通用)
 
-**线上 jar 即 HEAD `c6dd22c` 审核制版,后端无需重新部署。** 三重独立证据:
+不要靠 jar 时间戳猜。三重独立验证,任一不过即视为需要重新部署:
 
-1. 该提交新增的类全部存在于线上 jar:`AdminCommunityController` / `AdminEventController` / `CommunityAuditRequest` / `UploadRules`;
-2. `tsa` 库审核列已就位:`community_post.status`、`community_comment.status`、`community_comment.post_id`(迁移脚本只加这些列,无 `audit_note`);
-3. 无 token `GET /tsa/admin/community/posts` 返回 Sa-Token 的 401 壳(`{"code":401,"message":"未登录或登录已过期"}`,HTTP 层 200),而非 404。
+1. **类存在性**:取本地 HEAD 新增/改动的特征类名,查线上 jar 内是否有:
 
-> 勘误:本节旧版给的 build-info.txt 验证命令是**误写**——Api 仓库根本没有
-> `generated/build-info.txt` 这套机制(grep 无引用,jar 内无此路径),已删。
+   ```bash
+   ssh -i <kevin.pem> ubuntu@43.156.74.60 "python3 -c \"import zipfile; \
+   print([n for n in zipfile.ZipFile('/opt/tsa/api/tsa-api.jar').namelist() \
+   if '<特征类名>' in n])\""
+   ```
 
-复现命令:
+2. **DB 列就位**:新提交带来的迁移列在 `tsa` 库 `information_schema.columns` 中确实存在;
+3. **路由行为**:新端点无 token 访问应返回 Sa-Token 的 401 壳(`{"code":401,...}`,HTTP 层 200),而非 404。
 
-```bash
-ssh -i <kevin.pem> ubuntu@43.156.74.60 "python3 -c \"import zipfile; \
-print([n for n in zipfile.ZipFile('/opt/tsa/api/tsa-api.jar').namelist() \
-if 'AdminCommunity' in n or 'CommunityAuditRequest' in n])\""
-
-sudo mysql -N -e "SELECT table_name,column_name FROM information_schema.columns \
-  WHERE table_schema='tsa' AND table_name IN ('community_post','community_comment') \
-  AND column_name IN ('status','post_id') ORDER BY 1,2;"
-```
+> 勘误:本文旧版写过 build-info.txt 验证法——Api 仓库没有该机制,勿再引用。
 
 ---
 
@@ -74,10 +63,7 @@ exit
 
 ---
 
-## 3. 后端部署 runbook(前提:§1 验证显示线上 jar ≠ HEAD,或你要把新改动推上去)
-
-> **2026-09-29 §1 定案:线上 jar 已 = HEAD `c6dd22c`,本节本次无需执行。**
-> 仅当你之后又推了新提交时按此走。
+## 3. 后端部署 runbook(前提:上一节验证显示线上 jar ≠ 本地 HEAD,或你要把新改动推上去)
 
 > 全程 root 执行。本地先 `./mvnw -q package -DskipTests`,产物在
 > `target/tsa-api-0.0.1-SNAPSHOT.jar`(**不是**旧文档写的 `TownshipAssociation-Api-*.jar`)。
@@ -89,12 +75,10 @@ scp -i <kevin.pem> target/tsa-api-0.0.1-SNAPSHOT.jar ubuntu@43.156.74.60:/home/u
 # 1) 服务器:备份现役 jar
 cp -a /opt/tsa/api/tsa-api.jar /opt/tsa/api/tsa-api.jar.bak.$(date +%F-%H%M)
 
-# 2) 先跑迁移(HEAD 含两个迁移文件,幂等性各自确认后再执行)
-#    mysql <schema 名为 tsa> 用 env 里的账号,或直接 root socket:
-mysql tsa < /path/to/sql/migrate-2026-09-14-community-audit.sql
-mysql tsa < /path/to/sql/migrate-2026-09-15-comment-audit.sql
-#    (迁移文件随仓库 git 取,或 scp 上去;跑前 mysqldump 逻辑备份一份 tsa 库)
+# 2) 先跑迁移(以本次待部署提交新增的 sql/migrate-*.sql 为准,逐个确认幂等性再执行;
+#    用 env 里的账号或 root socket 连 tsa 库;跑前必做逻辑备份)
 mysqldump --single-transaction tsa > /root/tsa-backup-$(date +%F).sql
+mysql tsa < /path/to/sql/<本次新增的迁移文件>.sql
 
 # 3) 换 jar + 重启(属主与 systemd 一致)
 install -o root -m 644 /home/ubuntu/tsa-api-0.0.1-SNAPSHOT.jar /opt/tsa/api/tsa-api.jar
@@ -135,7 +119,7 @@ chown -R ubuntu:ubuntu /opt/tsa/web   # 实测现网属主就是 ubuntu:ubuntu(�
 ```
 1. https://www.gdutgaginang.cn/tsa/health                     → code=200
 2. GET  https://www.gdutgaginang.cn/tsa/admin/community/posts → 未带 token 应 401 壳
-   (旧 jar 无此路由会 404/网关错 —— 这条同时验「审核制接口已上线」)
+   (返回 404/网关错说明该路由的 jar 未上线;每次部署可换成本次新增的特征端点来验)
 3. 官网首页/公告/事件/社区列表能出数据(浏览器 F12 看 /tsa 响应 code=200)
 4. 后台 /admin/login 登录成功;动态审核台能列待审
 5. RSC 预取:Network 里 __next… .txt 全部 200(0 个 404)——flatten-rsc 生效证据
@@ -144,9 +128,6 @@ chown -R ubuntu:ubuntu /opt/tsa/web   # 实测现网属主就是 ubuntu:ubuntu(�
 
 ## 7. 待办/存疑
 
-- [x] §1 两条决定性验证(审核列 ✅;build-info 机制不存在,已勘误)—— sudo 已解锁,2026-09-29 完成;
-- [x] 版本定案:线上 = `c6dd22c`,后端免部署;
 - [ ] 旧文档纠偏:`TownshipAssociation-Api` 仓库的 AGENTS/README、Web `docs/TECHNOLOGY.md` §6
       「香港/lighthub/`/tsa` 目录结构」等以本文为准改写;
-- [x] `web` 仓库根 `pnpm-lock.yaml`/`pnpm-workspace.yaml` 已删除，统一 npm 路线（2026-09-29，`npm install` + 构建复验通过）;
 - [ ] `tsa` 库的逻辑备份 cron:现网是否存在**未验证**。
