@@ -12,12 +12,19 @@ import {
   regionLabel,
 } from "@/lib/site-api";
 import { formatRelative } from "@/lib/site-format";
+import type { CommunityPostType } from "@/lib/types";
 
 /**
  * 动态详情：正文/图片 + 点赞 + 评论区（列表按后端返回顺序展示，后端为时间倒序）。
  * 一期无登录：点赞每次访问只能点一次（按钮即灰,后端计数无去重,少点为敬）；
  * 评论者昵称为表单自由填，与发布动态同口径。
  */
+
+/** 返回目标 = 所属板块（上一级）；detail 目前仅由两个板块页链路进入，type 必居其一 */
+const BOARDS: Record<CommunityPostType, { href: string; label: string }> = {
+  food: { href: "/community/food", label: "美食基地" },
+  campus: { href: "/community/campus", label: "校园资讯" },
+};
 export default function PostDetail() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,6 +79,8 @@ export default function PostDetail() {
   }
 
   const post = state.data!;
+  // ?? 兜底：type 声明为两栏联合，但线上旧数据若出第三种值不能崩页，退回广场首页
+  const board = BOARDS[post.type] ?? { href: "/community", label: "社区广场" };
   const likeCount = likes ?? post.likes;
   const comments = post.commentsList ?? [];
   // 正文纯文本含换行：按空行切段，段内换行 pre-line 保留（同公告详情口径）
@@ -116,8 +125,8 @@ export default function PostDetail() {
   return (
     <article>
       <div className="mb-4">
-        <Link href="/community" className="t-brand text-sm underline-offset-4 hover:underline">
-          ← 返回社区广场
+        <Link href={board.href} className="t-brand text-sm underline-offset-4 hover:underline">
+          ← 返回{board.label}
         </Link>
       </div>
 
@@ -137,7 +146,7 @@ export default function PostDetail() {
             </time>
           </div>
           <span className={`site-chip ${post.type === "food" ? "site-chip--thanks" : "site-chip--pinned"}`}>
-            {post.type === "food" ? "美食基地" : "校园广场"}
+            {board.label}
           </span>
         </div>
 
