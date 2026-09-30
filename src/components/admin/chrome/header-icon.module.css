@@ -1,0 +1,39 @@
+.dropItem {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.icon {
+  font-size: 20px;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.dropdown :global(.t-button--variant-text) {
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.dropdown :global(.t-button__text) {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown :global(.t-dropdown__item) {
+  max-width: none !important;
+  width: 117px;
+}
+
+.dropdown :global(.t-dropdown__item-text) {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown :global(.t-dropdown__item .t-icon) {
+  margin-right: 8px;
+}

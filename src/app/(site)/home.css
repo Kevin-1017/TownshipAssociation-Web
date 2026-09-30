@@ -1,0 +1,54 @@
+/** 首页 hero 样式（app/(site)/page.tsx）。 */
+
+.site-hero {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand-bright) 100%);
+  border-radius: 0; /* 与 footer 同款直角 */
+}
+/* 首屏背景照（public/home-hero.jpg 直出，宽 1600 压至 ~150KB）：
+   object-cover 裁切，图加载前/失败时透出底层品牌蓝渐变兜底 */
+.site-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 左侧品牌蓝压暗纱：白字在任意画面上保持对比度 */
+.site-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(0, 45, 107, 0.84) 0%,
+    rgba(0, 82, 217, 0.56) 48%,
+    rgba(0, 82, 217, 0.16) 100%
+  );
+}
+/* 几何装饰：右上一圈细线环、右下一枚半透圆盘（衬在照片上仅作微纹理） */
+.site-hero::before,
+.site-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.site-hero::before {
+  width: 22rem;
+  height: 22rem;
+  right: -6rem;
+  top: -9rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+.site-hero::after {
+  width: 11rem;
+  height: 11rem;
+  right: 4rem;
+  bottom: -5rem;
+  background: rgba(255, 255, 255, 0.08);
+}

@@ -2,28 +2,32 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import LeaderShowcaseSection from "@/components/site/leader-showcase";
-import Reveal from "@/components/site/reveal";
-import RevealGroup from "@/components/site/reveal-group";
-import { AmountText, SectionHead, ThanksBadge } from "@/components/site/parts";
-import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/state-blocks";
-import { useAsyncData } from "@/components/site/use-async-data";
+import LeaderShowcaseSection from "@/components/site/home/leader-showcase";
+import Reveal from "@/components/site/shared/reveal";
+import RevealGroup from "@/components/site/shared/reveal-group";
+import { AmountText, PinnedBadge, SectionHead, ThanksBadge } from "@/components/site/shared/parts";
+import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/shared/state-blocks";
+import { useAsyncData } from "@/components/site/shared/use-async-data";
 import { buildFileUrl } from "@/lib/api";
-import { fetchEvents, fetchFoundationHome } from "@/lib/site-api";
+import { fetchEvents, fetchFoundationHome, fetchNotices } from "@/lib/site-api";
 import { formatDate } from "@/lib/site-format";
+import "./home.css";
 
 /**
- * 官网首页：hero + 乡会事件速览 + 基金会（奖励 / 捐赠鸣谢）预览 + 负责人风采。
- * 只读取数在客户端完成，两路数据各自兜底，单路失败不拖垮整页。
+ * 官网首页：hero + 最新公告速览 + 乡会事件速览 + 基金会（奖励 / 捐赠鸣谢）预览 + 负责人风采。
+ * 只读取数在客户端完成，各路数据各自兜底，单路失败不拖垮整页。
  */
 export default function SiteHomePage() {
   const foundation = useAsyncData(fetchFoundationHome);
 
   const rewardItems = (foundation.state.data?.rewards ?? []).slice(0, 4);
   const donationItems = (foundation.state.data?.donations ?? []).slice(0, 4);
-  // 乡会事件最新两条：后端 start_time 倒序，口径同小程序首页区（pageSize 2 即所求）
+  // 乡会事件最新两条：后端 start_time 倒序，pageSize 2 即所求
   const events = useAsyncData(() => fetchEvents({ page: 1, pageSize: 2 }));
   const eventRows = events.state.data?.list ?? [];
+  // 最新公告三条：后端已按置顶优先 + 发布时间倒序返回不分页全量，前端截三条
+  const notices = useAsyncData(fetchNotices);
+  const noticeList = (notices.state.data ?? []).slice(0, 3);
 
   return (
     <div>
@@ -47,21 +51,60 @@ export default function SiteHomePage() {
               乡会事件、奖励表彰、捐赠鸣谢 —— 乡会公开信息，一站查看。
             </p>
             <p className="site-display mt-2 text-sm opacity-70">同是一方水土人，相逢异方倍亲切。</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/events" className="site-btn site-btn--onblue">
-                看乡会事件
-              </Link>
-              <Link href="/foundation" className="site-btn site-btn--onblue">
-                校友基金会
-              </Link>
-            </div>
           </RevealGroup>
         </div>
       </section>
 
       <div className="site-container space-y-12 pt-10 sm:pt-12">
-        {/* ---------- 乡会事件速览（对应小程序首页「乡会事件」区：最新两条，左图右文；
-            公告职能已被事件线顶替，原「最新公告」区按用户决策移除） ---------- */}
+        {/* ---------- 最新公告速览（置顶优先 + 发布时间倒序取三条；跳公告详情页） ---------- */}
+        <section aria-labelledby="home-notices-title">
+          <Reveal>
+            <SectionHead
+              id="home-notices-title"
+              title="最新公告"
+              subtitle="乡会通知与公开信息"
+              moreHref="/notices"
+              moreLabel="全部公告"
+            />
+          </Reveal>
+          {notices.state.status === "loading" ? <ListSkeleton rows={3} /> : null}
+          {notices.state.status === "error" ? (
+            <ErrorHint message={notices.state.error} onRetry={notices.reload} />
+          ) : null}
+          {notices.state.status === "ready" && noticeList.length === 0 ? (
+            <EmptyHint text="暂无公告，敬请期待。" />
+          ) : null}
+          {notices.state.status === "ready" && noticeList.length > 0 ? (
+            <div className="site-card site-divide overflow-hidden">
+              {noticeList.map((n) => (
+                <Reveal key={n.id}>
+                  <Link
+                    href={`/notices/detail?id=${encodeURIComponent(n.id)}`}
+                    className="block px-5 py-4 transition-colors hover:bg-[#faf5ea] sm:px-6"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {n.pinned ? <PinnedBadge /> : null}
+                      <span className="site-display min-w-0 flex-1 truncate font-semibold">
+                        {n.title}
+                      </span>
+                      <time
+                        className="t-sub shrink-0 text-xs tabular-nums sm:text-sm"
+                        dateTime={n.publishedAt}
+                      >
+                        {formatDate(n.publishedAt)}
+                      </time>
+                    </div>
+                    {n.summary ? (
+                      <p className="t-soft mt-1 line-clamp-2 pr-2 text-sm">{n.summary}</p>
+                    ) : null}
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
+        {/* ---------- 乡会事件速览（最新两条，左图右文） ---------- */}
         <section aria-labelledby="home-events-title">
           <Reveal>
             <SectionHead
@@ -83,7 +126,7 @@ export default function SiteHomePage() {
             <div className="site-card site-divide overflow-hidden">
               {eventRows.map((e) => {
                 const cover = buildFileUrl(e.cover);
-                // 详情页已删：有 articleUrl 直接新窗口跳公众号，无链接的行不具跳转语义（旧后端键可能缺失）
+                // 有 articleUrl 直接新窗口跳公众号，无链接的行不具跳转语义（旧后端键可能缺失）
                 const articleUrl = e.articleUrl ?? null;
                 const inner = (
                   <>
@@ -154,7 +197,6 @@ export default function SiteHomePage() {
             />
           </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
-            {/* 校内奖励与表彰 */}
             <Reveal>
               <div className="site-card flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between gap-3 px-5 pt-5 sm:px-6">
@@ -193,7 +235,6 @@ export default function SiteHomePage() {
               </div>
             </Reveal>
 
-            {/* 捐赠与帮助致谢 */}
             <Reveal>
               <div className="site-card flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between gap-3 px-5 pt-5 sm:px-6">

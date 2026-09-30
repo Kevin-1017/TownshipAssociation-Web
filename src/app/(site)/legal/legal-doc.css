@@ -1,0 +1,12 @@
+/**
+ * 法律文本正文版式（legal/legal-doc）—— 与组件共置，由 legal-doc.tsx 引入。
+ */
+
+.site-prose h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.site-prose p {
+  text-align: justify;
+  text-justify: inter-ideograph;
+}

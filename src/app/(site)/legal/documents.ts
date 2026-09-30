@@ -1,8 +1,4 @@
-/**
- * 法律文本正文 —— 口径来自 tsa-miniprogram/src/constants/legal.ts。
- * 改动仅限：「小程序」称谓 → 「网站 / 平台」；Cookie 一节按网站实情微调
- * （localStorage 仅用于管理后台管理员设备的登录态）。更新日期沿用原文。
- */
+/** 法律文本正文数据（隐私保护指引 / 用户服务协议），供 legal 栏目页面渲染。 */
 
 export interface LegalSection {
   /** 小节标题；空串表示「更新日期/生效日期」前言块 */
@@ -152,9 +148,4 @@ export const AGREEMENT_DOC: LegalDocument = {
         "如因本协议产生争议，双方应友好协商解决；协商不成的，任何一方均可向本平台运营方所在地的人民法院提起诉讼。",
     },
   ],
-};
-
-export const LEGAL_DOCS: Record<LegalDocument["kind"], LegalDocument> = {
-  privacy: PRIVACY_DOC,
-  agreement: AGREEMENT_DOC,
 };

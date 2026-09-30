@@ -20,8 +20,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // 官方 tdesign-react-starter 模板整份参考存档(仅备查,不参与构建/lint/类型检查)
-    "src/tdesign-starter/**",
   ]),
 ]);
 

@@ -5,7 +5,7 @@
  * 成功 code=200 解包 data；VO 的 id 为字符串；金额单位为「元」，不做换算。
  * 社区广场一期无登录（作者为表单昵称），读接口 + 发布/点赞/评论写接口都无需 token；
  * 事件（/tsa/events）同为公网匿名读接口。网站不受微信平台 5.7.1 UGC 限制，
- * 社区写入口照常保留（与小程序端「功能下线」的差异是刻意的）。
+ * 社区写入口照常保留。
  */
 import { request } from "@/lib/api";
 import type {
@@ -50,7 +50,7 @@ export function fetchNoticeDetail(id: string): Promise<Notice> {
 // ============ 乡会事件（事件线，公网匿名读） ============
 
 /**
- * 年份筛选候选 —— 下限对齐小程序事件页 YEAR_MIN=2000，上限取当前年，倒序。
+ * 年份筛选候选 —— 下限 2000，上限取当前年，倒序。
  * 后端以 start_time 半开区间命中 idx_start_time 索引，前端透传 ?yearFrom=&yearTo= 区间即可。
  */
 export const EVENT_YEARS: number[] = Array.from(
@@ -62,7 +62,7 @@ export interface EventsQuery {
   page?: number;
   /** 后端钳制 1..50 */
   pageSize?: number;
-  /** 单年过滤（旧参数，4 位数字；缺省不限，越界后端返 400）。web 已改用区间，保留兼容 */
+  /** 单年过滤（4 位数字；缺省不限，越界后端返 400） */
   year?: number | null;
   /** 年份区间起（含，4 位数字）；与 yearTo 任一侧可缺省=开区间 */
   yearFrom?: number | null;
@@ -81,11 +81,11 @@ export function fetchEvents(query: EventsQuery = {}): Promise<PageVO<EventListIt
   return request<PageVO<EventListItem>>(`/tsa/events?${sp.toString()}`);
 }
 
-// 事件详情（GET /tsa/events/{id}）web 端已弃用：2026-09-14 起列表直跳公众号，无详情页。
+// 事件详情（GET /tsa/events/{id}）web 端不使用：列表直跳公众号，无详情页。
 
 // ============ 社区动态（广场） ============
 
-/** 菜系候选（与小程序 food.vue 的 CUISINE_OPTIONS 同源，后端字典就位后可换拉取） */
+/** 菜系候选（后端字典就位后可换拉取） */
 export const CUISINE_OPTIONS = [
   "潮汕菜",
   "粤菜",
@@ -97,7 +97,7 @@ export const CUISINE_OPTIONS = [
   "西餐",
 ];
 
-/** 地区候选（与小程序 REGION_OPTIONS 同源；接口传 value，展示用 label） */
+/** 地区候选（接口传 value，展示用 label） */
 export const COMMUNITY_REGIONS: { label: string; value: string }[] = [
   { label: "龙洞", value: "longdong" },
   { label: "大学城", value: "daxuecheng" },

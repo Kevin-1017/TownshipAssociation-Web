@@ -1,0 +1,113 @@
+/**
+ * 顶栏导航（site-header）—— 与组件共置，由 site-header.tsx 引入。
+ * token 来自 site.css；汉堡按钮外形复用 site-atoms.css 的 .site-btn。
+ */
+
+/* 两态切换：
+   ① 回顶/首屏 —— 通栏一横条紧贴页面顶，banner 在 header 下方（header 正常占流）；
+   ② 下拉滚动 —— 变悬浮胶囊：左右收边、2rem 圆角、投影，底色与①保持一致（悬浮态不变白）。
+   定位/层级走裸规则，不依赖 Tailwind 工具类（v4 裸规则恒赢）。
+   形变动效：--th-dur/--th-ease 统一 header（含 sticky 的 top）/胶囊/面板，
+   top 必须一起插值，否则胶囊在形变、顶偏移却瞬跳，整体观感会脱节。 */
+.site-header {
+  --th-dur: 0.6s;
+  --th-ease: cubic-bezier(0.22, 1, 0.36, 1); /* easeOutQuint：快速启动、缓缓落位 */
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  transition: top var(--th-dur) var(--th-ease);
+}
+
+.site-header__bar {
+  background-color: color-mix(in srgb, var(--paper) 92%, #ffffff);
+  /* 四边先铺透明 1px 边框，悬浮态只改颜色：避免 0→1px 边框突然弹出 */
+  border: 1px solid transparent;
+  border-bottom-color: var(--line);
+  transition:
+    margin var(--th-dur) var(--th-ease),
+    border-radius var(--th-dur) var(--th-ease),
+    border-color var(--th-dur) var(--th-ease),
+    box-shadow var(--th-dur) var(--th-ease);
+}
+
+/* 悬浮态：sticky 顶偏移 + 胶囊形变同时进行（共用同一条动效曲线） */
+.site-header--float {
+  top: 0.6rem;
+}
+
+.site-header--float .site-header__bar {
+  margin-inline: clamp(0.6rem, 3vw, 1.6rem);
+  border-color: var(--line);
+  border-radius: 2rem;
+  box-shadow: 0 10px 30px rgba(19, 41, 79, 0.14);
+  /* 不写 background-color：悬浮态直接沿用回顶暖纸色，两态同色 */
+}
+
+/* 窄屏折叠菜单底色：两态都与顶栏同色（内联 style 会覆盖，故这里统一收口） */
+.site-header #site-nav-panel {
+  background-color: color-mix(in srgb, var(--paper) 92%, #ffffff);
+  border-top: 1px solid var(--line);
+  transition:
+    margin var(--th-dur) var(--th-ease),
+    border-radius var(--th-dur) var(--th-ease),
+    box-shadow var(--th-dur) var(--th-ease);
+}
+
+/* 悬浮态下展开的窄屏菜单：收边同宽 + 下圆角，视觉上挂在胶囊底下 */
+.site-header--float #site-nav-panel {
+  margin-inline: clamp(0.6rem, 3vw, 1.6rem);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 2rem 2rem;
+  box-shadow: 0 10px 30px rgba(19, 41, 79, 0.14);
+}
+
+/* 悬浮 + 菜单展开：把胶囊底角改成直角，与面板方形顶边拼成一整张连续圆角卡片，
+   消除接缝左右两端探出的直角；收起菜单后仍是完整悬浮胶囊。用 open 态类驱动，
+   不用 :has()（微信内核机型支持不稳）。 */
+.site-header--float.site-header--nav-open .site-header__bar {
+  border-radius: 2rem 2rem 0 0;
+  border-bottom-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header__bar,
+  .site-header #site-nav-panel {
+    transition: none;
+  }
+}
+
+/* ---------- 导航链接胶囊（桌面横排与窄屏面板共用） ---------- */
+
+.site-navlink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.site-navlink:hover {
+  color: var(--brand);
+}
+.site-navlink--active {
+  color: var(--brand-deep);
+  background-color: var(--brand-soft);
+  font-weight: 600;
+}
+
+/* 顶栏汉堡按钮：≥768px 隐藏。
+   不能用 Tailwind 的 md:hidden（v4 工具类进 @layer，会被本表裸规则按权重压平）；
+   也不能只写单类 .site-hamburger —— site-atoms.css 的 .site-btn{display:inline-flex}
+   同为单类权重，且 layout 先挂组件样式、后挂原子样式，后者靠顺序反杀。
+   用 .site-header 作用域抬到双类权重，与加载顺序无关地恒赢。 */
+@media (min-width: 48rem) {
+  .site-header .site-hamburger {
+    display: none;
+  }
+}

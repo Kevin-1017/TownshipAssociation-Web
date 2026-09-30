@@ -155,8 +155,8 @@ export type EventStatus = "upcoming" | "past";
 /**
  * 事件列表项（EventListVO）。
  * 注意：该 VO 无 @JsonInclude(NON_NULL)，可空字段的键恒在、值为 null —— 故写 `T | null` 而非可选。
- * articleUrl 是 2026-09-14 契约 C5 增补（web 删详情页后列表直跳公众号）：
- * 后端未部署前线上响应没有该键，消费处一律按 `?? null` 容错。
+ * articleUrl 为契约增补字段（web 无事件详情页，列表直跳公众号）：
+ * 旧版后端响应可能没有该键，消费处一律按 `?? null` 容错。
  */
 export interface EventListItem {
   id: string;
@@ -165,7 +165,7 @@ export interface EventListItem {
   cover: string | null;
   /** 摘要，可空 */
   summary: string | null;
-  /** 公众号原文链接，可空/可能缺键（旧后端未下发） */
+  /** 公众号原文链接，可空 */
   articleUrl: string | null;
   /** 开始时间（ISO 8601 带时区；列表由后端按此列倒序） */
   startTime: string;
@@ -186,7 +186,7 @@ export interface CommunityComment {
   /** 评论时间（ISO 8601 带时区） */
   createTime: string;
   likes?: number | null;
-  /** 所属动态 id（2026-09-15 起后端随列表下发） */
+  /** 所属动态 id（后端随列表下发） */
   postId?: string | null;
   /** 审核状态（管理端消费：0 待审/1 已过/2 已驳；公开详情的评论恒为 1） */
   status?: number | null;
@@ -211,7 +211,7 @@ export interface CommunityPost {
   likes: number;
   /** 评论条数（后端派生） */
   comments: number;
-  /** 审核状态（2026-09-14 审核制）：0 待审 / 1 已过 / 2 已驳。公开列表只会下发 1，管理端消费 */
+  /** 审核状态：0 待审 / 1 已过 / 2 已驳。公开列表只会下发 1，管理端消费 */
   status?: number | null;
   commentsList?: CommunityComment[] | null;
   /** 菜系（仅美食动态） */

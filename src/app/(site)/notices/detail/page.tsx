@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ListSkeleton } from "@/components/site/state-blocks";
+import { ListSkeleton } from "@/components/site/shared/state-blocks";
 import NoticeDetail from "./notice-detail";
 
 export const metadata: Metadata = {

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { PageHead, PinnedBadge } from "@/components/site/parts";
-import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/state-blocks";
-import { useAsyncData } from "@/components/site/use-async-data";
+import { PageHead, PinnedBadge } from "@/components/site/shared/parts";
+import { EmptyHint, ErrorHint, ListSkeleton } from "@/components/site/shared/state-blocks";
+import { useAsyncData } from "@/components/site/shared/use-async-data";
 import { fetchNotices } from "@/lib/site-api";
 import { formatDate } from "@/lib/site-format";
 

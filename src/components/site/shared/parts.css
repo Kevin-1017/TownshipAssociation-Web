@@ -1,0 +1,31 @@
+/**
+ * 官网共用展示零件（parts.tsx：金额 / 区头 / 子页页头）—— 与组件共置，
+ * 由 parts.tsx 引入。徽标 .site-chip* 属跨页原子，仍在 site-atoms.css。
+ */
+
+/* ---------- 金额（暖褐强调） ---------- */
+
+.site-amount {
+  color: var(--amber);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------- 子页页头 ---------- */
+
+.site-pagehead {
+  color: #fff;
+  /* 内页页头与首页 hero 同图（public/home-hero.jpg）：三层叠加 ——
+     顶层品牌蓝纱保白字对比、中层照片 cover、底层渐变兜底（图挂掉时回到原渐变） */
+  background:
+    linear-gradient(
+      100deg,
+      rgba(0, 45, 107, 0.84) 0%,
+      rgba(0, 82, 217, 0.56) 48%,
+      rgba(0, 82, 217, 0.16) 100%
+    ),
+    url("/home-hero.jpg") center / cover no-repeat,
+    linear-gradient(150deg, var(--brand-deep) 0%, var(--brand) 68%, var(--brand-bright) 100%);
+  border-radius: 0; /* 与首页 hero 一致改直角 */
+}

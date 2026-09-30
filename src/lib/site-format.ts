@@ -1,5 +1,5 @@
 /**
- * 官网展示层格式化工具 —— 与小程序 utils/format 同口径。
+ * 官网展示层格式化工具。
  *
  * 后端时间统一为带时区 ISO 8601（如 '2026-09-06T14:30:00+08:00'）；
  * 金额单位为「元」，禁止 /100 换算。
@@ -31,7 +31,7 @@ export function formatMonthDay(iso: string | null | undefined): string {
   return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/** 距今多久：<1h 分钟、<24h 小时、<30 天天数、更早显示日期（与小程序 formatRelative 同口径） */
+/** 距今多久：<1h 分钟、<24h 小时、<30 天天数、更早显示日期 */
 export function formatRelative(iso: string | null | undefined): string {
   if (!iso) return "";
   const t = new Date(iso).getTime();
@@ -48,7 +48,7 @@ export function formatRelative(iso: string | null | undefined): string {
   return formatDate(iso);
 }
 
-/** 金额（元）：50000 → '¥5万'，12500 → '¥1.3万'，3000 → '¥3000'（与小程序 formatAmount 一致） */
+/** 金额（元）：50000 → '¥5万'，12500 → '¥1.3万'，3000 → '¥3000' */
 export function formatAmount(yuan: number): string {
   if (yuan >= 10000) {
     return `¥${(yuan / 10000).toFixed(yuan % 10000 === 0 ? 0 : 1)}万`;

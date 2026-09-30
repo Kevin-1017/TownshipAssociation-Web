@@ -28,7 +28,7 @@ import {
   updateDonation,
 } from "@/lib/admin-api";
 import type { DonationAdminRecord, DonationSaveRequest } from "@/lib/types";
-import { numOrNull } from "@/components/admin/form-helpers";
+import { numOrNull } from "@/components/admin/shared/form-helpers";
 
 type DonationFormValues = {
   donorName?: string;

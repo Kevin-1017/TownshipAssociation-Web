@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHead } from "@/components/site/parts";
+import { PageHead } from "@/components/site/shared/parts";
 
 export const metadata: Metadata = {
   title: "关于我们",

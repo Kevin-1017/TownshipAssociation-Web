@@ -148,5 +148,5 @@ chown -R ubuntu:ubuntu /opt/tsa/web   # 实测现网属主就是 ubuntu:ubuntu(�
 - [x] 版本定案:线上 = `c6dd22c`,后端免部署;
 - [ ] 旧文档纠偏:`TownshipAssociation-Api` 仓库的 AGENTS/README、Web `docs/TECHNOLOGY.md` §6
       「香港/lighthub/`/tsa` 目录结构」等以本文为准改写;
-- [ ] `web` 仓库根仍有未跟踪的 `pnpm-lock.yaml`/`pnpm-workspace.yaml`:确认 npm 路线后删除或迁移,二选一;
+- [x] `web` 仓库根 `pnpm-lock.yaml`/`pnpm-workspace.yaml` 已删除，统一 npm 路线（2026-09-29，`npm install` + 构建复验通过）;
 - [ ] `tsa` 库的逻辑备份 cron:现网是否存在**未验证**。

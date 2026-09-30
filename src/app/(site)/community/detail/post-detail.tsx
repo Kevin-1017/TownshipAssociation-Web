@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ErrorHint } from "@/components/site/state-blocks";
-import { useAsyncData } from "@/components/site/use-async-data";
+import { ErrorHint } from "@/components/site/shared/state-blocks";
+import { useAsyncData } from "@/components/site/shared/use-async-data";
 import {
   commentCommunityPost,
   fetchCommunityPostDetail,

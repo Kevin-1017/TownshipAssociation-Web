@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "tdesign-react/es/style/index.css";
 // 后台全局设计 token(圆角与官网对齐等)，仅 (admin) 组加载；CSS 导入可以出现在 Server Component，
 // React 19 的 TDesign 适配器导入在客户端模块 AdminShell 中，勿挪到此处。
-import "@/components/admin/starter/admin-theme.css";
-import AdminShell from "@/components/admin/admin-shell";
+import "@/components/admin/chrome/admin-theme.css";
+import AdminShell from "@/components/admin/chrome/admin-shell";
 
 export const metadata: Metadata = {
   title: "管理后台 · 广工胶己人",

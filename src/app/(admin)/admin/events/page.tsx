@@ -32,9 +32,8 @@ import { buildFileUrl } from "@/lib/api";
 import type { EventListItem } from "@/lib/types";
 
 /**
- * 乡会事件管理（2026-09-14 管理端配置入口）：
- * GET/POST /tsa/admin/events、PUT/DELETE /tsa/admin/events/{id}、POST /tsa/admin/events/cover。
- * 字段=用户定稿三件套（图片、标题、公众号 url）+ 开始时间（排序/年份筛选依据）；
+ * 乡会事件管理：GET/POST /tsa/admin/events、PUT/DELETE /tsa/admin/events/{id}、POST /tsa/admin/events/cover。
+ * 字段=图片、标题、公众号 url 三件套 + 开始时间（排序/年份筛选依据）；
  * 「删除即下架」——逻辑删除后官网/小程序公开列表即时查无，无发布/下架开关。
  * cover 清除走空串（后端 null=不改、""=清除）；summary 不在管理表单内（保留库值）。
  */

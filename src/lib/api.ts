@@ -11,7 +11,7 @@ import type { ApiResult } from "@/lib/types";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 /**
- * 资源地址清洗（同小程序 buildFileUrl 口径）：后端下发的封面/图片可能给
+ * 资源地址清洗：后端下发的封面/图片可能给
  * 相对路径（/tsa/files/...，秘书处上传件），需拼域名；外链原样透传。
  * 注意生产构建 NEXT_PUBLIC_API_BASE_URL 为空串 = 同源部署，直接相对可达。
  */
@@ -83,7 +83,7 @@ export async function request<T>(
     if (e instanceof ApiError) throw e;
     if (e instanceof AxiosError) {
       if (e.response) {
-        // 非 2xx：与原 fetch 版一致，包成 code=-1 的 HTTP 提示（isUnauthorizedError 依赖该文案）
+        // 非 2xx：包成 code=-1 的 HTTP 提示（isUnauthorizedError 依赖该文案）
         throw new ApiError(-1, `HTTP ${e.response.status} ${e.response.statusText || ""}`.trim());
       }
       throw new ApiError(-1, e.message ? `网络请求失败：${e.message}` : "网络请求失败");

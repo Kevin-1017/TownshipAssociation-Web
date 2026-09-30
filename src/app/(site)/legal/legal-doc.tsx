@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { PageHead } from "@/components/site/parts";
+import { PageHead } from "@/components/site/shared/parts";
 import type { LegalDocument } from "./documents";
+import "./legal-doc.css";
 
 /**
  * 法律文本渲染版式：页头 + 前言日期块 + 逐节正文。

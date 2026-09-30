@@ -133,7 +133,7 @@ export function deleteNotice(id: string): Promise<void> {
   return request<void>(`/tsa/admin/notices/${id}`, { method: "DELETE", token: token() });
 }
 
-// ============ 社区动态审核（2026-09-14 审核制） ============
+// ============ 社区动态审核 ============
 
 /** GET /tsa/admin/community/posts —— 服务端分页；status：0 待审/1 已过/2 已驳，缺省全部 */
 export function fetchAdminCommunityPosts(query: {
@@ -189,8 +189,8 @@ export function auditComment(id: string, status: number): Promise<void> {
   });
 }
 
-// ============ 乡会事件管理（2026-09-14 管理端配置入口，删除即下架） ============
-/** GET /tsa/admin/events —— 服务端分页；keyword 标题模糊；start_time 倒序；出参复用 C5 列表 VO */
+// ============ 乡会事件管理（删除即下架） ============
+/** GET /tsa/admin/events —— 服务端分页；keyword 标题模糊；start_time 倒序；出参复用公开列表 VO */
 export function fetchAdminEvents(query: {
   page?: number;
   pageSize?: number;

@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHead } from "@/components/site/parts";
+import { PageHead } from "@/components/site/shared/parts";
 
 export const metadata: Metadata = {
   title: "社区广场",
 };
 
-/**
- * 社区广场入口页：三张并列卡片（乡会流年志 / 美食基地 / 校园资讯）。
- * 流年志是官方编年史只读专栏；美食基地、校园资讯即小程序「美食基地 + 校园广场」
- * 两板块的 web 化 —— 各自独立的动态列表,可发布/点赞/评论(网站不受微信 5.7.1 限制)。
- */
+/** 社区广场入口页：三张并列卡片（乡会流年志 / 美食基地 / 校园资讯）；流年志为官方编年史只读专栏，其余两栏是可发布/点赞/评论的动态列表。 */
 const ENTRIES: { href: string; title: string; desc: string }[] = [
   {
     href: "/community/chronicle",

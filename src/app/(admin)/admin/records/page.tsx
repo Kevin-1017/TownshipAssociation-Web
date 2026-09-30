@@ -25,7 +25,7 @@ import {
   updateRewardRecord,
 } from "@/lib/admin-api";
 import type { RewardRecord, RewardRecordSaveRequest } from "@/lib/types";
-import { numOrNull } from "@/components/admin/form-helpers";
+import { numOrNull } from "@/components/admin/shared/form-helpers";
 
 type RecordFormValues = {
   categoryId?: number | string;

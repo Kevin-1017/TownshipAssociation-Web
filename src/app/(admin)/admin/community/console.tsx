@@ -25,12 +25,12 @@ import { buildFileUrl } from "@/lib/api";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/lib/types";
 
 /**
- * 社区审核台（按栏目拆分，2026-09-29）：/admin/community/{food|campus} 各挂一个实例。
- * 单棵树，不再分「动态/评论」页签——状态筛选是统一审核态：
+ * 社区审核台（按栏目拆分）：/admin/community/{food|campus} 各挂一个实例，单棵树。
+ * 状态筛选为统一审核态：
  * - 待审核/已驳回：命中「动态本身处于该状态」或「其下同状态评论」（后端 status OR 语义）；
  * - 已通过：只命中已过审动态；
  * - 全部：动态与其下全部评论。
- * 子级评论同样按当前状态过滤（postId+status 走现有评论接口），展开只见同状态评论。
+ * 子级评论同样按当前状态过滤（postId+status 走现有评论接口）。
  * 动态/评论都先落待审，通过后才对外；驳回可恢复（再传 1 即回通过）。
  * GET/PUT /tsa/admin/community/posts[...]、GET/PUT /tsa/admin/community/comments[...]。
  */

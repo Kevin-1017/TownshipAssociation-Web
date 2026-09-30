@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { EmptyHint, ErrorHint } from "@/components/site/state-blocks";
-import { useAsyncData } from "@/components/site/use-async-data";
+import { EmptyHint, ErrorHint } from "@/components/site/shared/state-blocks";
+import { useAsyncData } from "@/components/site/shared/use-async-data";
 import { fetchNoticeDetail } from "@/lib/site-api";
 import { formatDateTime } from "@/lib/site-format";
 

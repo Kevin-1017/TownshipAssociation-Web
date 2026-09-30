@@ -68,12 +68,11 @@ app/(admin)/**  ──→ components/admin/** ─→ lib/admin-api.ts ─┼→ 
 | --- | --- | --- |
 | `app/**` 页面 | 路由级组装、metadata、调 hook/取数 | ❌ 直接 `axios.get`(绕过拆壳与错误口径);❌ 写可复用的取数逻辑(下沉组件层) |
 | `components/site/` | 展示 + 事件上抛 + 自带取数的板块组件(板块即页面单元) | ❌ import `lib/admin-api`(两界不互通,见下) |
-| `components/admin/` | 后台壳、starter 移植件、表单辅助 | ❌ import tdesign-starter 备查目录(只许注释指路) |
+| `components/admin/` | 后台壳(chrome 移植件)、表单辅助、UI 状态 | ❌ import `lib/site-api`(两界不互通,纯展示件例外,见下) |
 | `lib/api.ts` | 网络、拆壳、`ApiError`、文件 URL、上传 | ❌ 出现任何业务字段名 |
 | `lib/site-api.ts` / `lib/admin-api.ts` | 声明接口、拼 query、注入 token | ❌ `if/else` 业务判断;❌ base 里再拼 `/tsa`(双前缀) |
 | `lib/admin-auth.ts` | localStorage 读写 + 变更订阅 | ❌ 掺入接口调用(它被 api 层引用,反向依赖成环) |
 | `lib/types.ts` | 契约的单一事实来源 | ❌ 放运行时代码 |
-| `src/tdesign-starter/` | 只读参考 | ❌ 被 import、❌ 被修改 |
 
 ### 官网与后台的两道墙
 
@@ -120,7 +119,7 @@ import type { Notice } from "@/lib/types";
 
 | 端 | 机制 | 原因 |
 | --- | --- | --- |
-| 官网 | `components/site/use-async-data.ts` 的 `useAsyncData(loader, key)` | 只读、进页一次、失败只要「重试出口」。状态机语义见文件头注释(key 变重取、loader 引用变化**不**重取、不在 effect 体同步 setState) |
+| 官网 | `components/site/shared/use-async-data.ts` 的 `useAsyncData(loader, key)` | 只读、进页一次、失败只要「重试出口」。状态机语义见文件头注释(key 变重取、loader 引用变化**不**重取、不在 effect 体同步 setState) |
 | 后台 | TanStack Query(`useQuery` / `useMutation`) | 列表失效、保存后刷表、并发去重都是刚需 |
 
 硬性规则:
@@ -174,9 +173,9 @@ import type { Notice } from "@/lib/types";
 ### 后台(TDesign + CSS Module)
 
 - 组件样式走 TDesign token:颜色/圆角/字号一律 `var(--td-*)`;
-  个别覆盖写在 `starter/admin-theme.css`(全站唯一 token 调整入口,如圆角与官网对齐)
+  个别覆盖写在 `chrome/admin-theme.css`(全站唯一 token 调整入口,如圆角与官网对齐)
   或就近的 `.module.css`;
-- `components/admin/starter/` 的模块 CSS 是模板 less 的手工编译物,**结构尽量保持原样**,
+- `components/admin/chrome/` 的模块 CSS 是模板 less 的手工编译物,**结构尽量保持原样**,
   方便回查模板源码;
 - 图片资源直链 `/public` 根路径(`url("/home-hero.jpg")`,**不带 `/public`**,TECHNOLOGY §8);
 - 用 `classnames`(站点已依赖)拼条件类,不用模板字符串手搓。
@@ -244,7 +243,7 @@ npx tsc --noEmit && npm run lint && npm run build
 ## 12. Code Review 清单【建议】
 
 1. **契约三处同步**(types / API.md / lib 层函数)—— 最高优先级;
-2. 依赖方向越界没(页面直连 axios?admin 引用 site-api?谁 import 了 tdesign-starter?);
+2. 依赖方向越界没(页面直连 axios?admin 引用 site-api?);
 3. RSC 边界:该 `"use client"` 的有没有,不该加的有没有整文件误加;
 4. VO 可选性镜像对了没(两副面孔,§4);未部署字段有没有 `?? null` 容错;
 5. 后台 mutation 后 invalidate 了对应 queryKey;queryKey 含全部参数;

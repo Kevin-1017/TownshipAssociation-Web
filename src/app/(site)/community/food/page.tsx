@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import CommunityBoard from "@/components/site/community-board";
+import CommunityBoard from "@/components/site/community/community-board";
 
 export const metadata: Metadata = {
   title: "美食基地",

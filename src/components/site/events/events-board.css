@@ -1,0 +1,9 @@
+/**
+ * 乡会事件版块（events-board）—— 与组件共置，由 events-board.tsx 引入。
+ * 事件封面 .site-event-cover* 首页也在用，留在 site-atoms.css。
+ */
+
+/* TDesign 下拉圆角适配：与 site-input 同款胶囊（组件默认 3px 直角在官网显生硬） */
+.site-select-pill .t-input {
+  border-radius: 999px;
+}

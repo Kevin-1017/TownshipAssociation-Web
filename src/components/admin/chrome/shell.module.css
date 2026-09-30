@@ -1,0 +1,38 @@
+/* CSS Module 为手写，非构建产物（Turbopack 不支持 less） */
+/* 高度用 100vh（无 #app 节点可依赖 100%） */
+.panel {
+  height: 100vh;
+}
+
+.panel :global(.t-menu--scroll::-webkit-scrollbar) {
+  width: 8px;
+  background: transparent;
+}
+
+.panel :global(.t-menu--scroll::-webkit-scrollbar-thumb) {
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  background-color: #eeeeee;
+}
+
+.panel :global(.t-default-menu.t-menu--dark) {
+  background: var(--td-gray-color-13);
+}
+
+.panel :global(.t-default-menu:not(.t-menu--dark) .t-menu__item.t-is-active:not(.t-is-opened)) {
+  background-color: var(--td-brand-color-1);
+  color: var(--td-brand-color);
+}
+
+.panel :global(.t-default-menu:not(.t-menu--dark) .t-menu__item.t-is-active:not(.t-is-opened) .t-icon) {
+  color: var(--td-brand-color);
+}
+
+.loading {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}

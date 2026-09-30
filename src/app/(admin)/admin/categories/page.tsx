@@ -24,7 +24,7 @@ import {
   updateRewardCategory,
 } from "@/lib/admin-api";
 import type { RewardCategorySaveRequest } from "@/lib/types";
-import { numOrNull } from "@/components/admin/form-helpers";
+import { numOrNull } from "@/components/admin/shared/form-helpers";
 
 /** 管理表格行：由公开读接口 GET /tsa/foundation 的 rewards（映射自类别表）聚合而来 */
 type CategoryRow = {

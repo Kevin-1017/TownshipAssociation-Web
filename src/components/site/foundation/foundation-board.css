@@ -1,0 +1,37 @@
+/**
+ * 分段 Tab（基金会页 foundation-board）—— 与组件共置，由 foundation-board.tsx 引入。
+ */
+
+.site-tabs {
+  display: flex;
+  gap: 0.375rem;
+  padding: 0.3rem;
+  background-color: color-mix(in srgb, var(--paper) 55%, var(--card));
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.site-tab {
+  flex: 1;
+  border-radius: 999px;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.site-tab:hover {
+  color: var(--brand);
+}
+.site-tab--active {
+  background-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 82, 217, 0.22);
+}
+.site-tab--active:hover {
+  color: #fff;
+}

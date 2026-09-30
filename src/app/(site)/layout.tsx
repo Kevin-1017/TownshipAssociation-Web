@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import SiteFooter from "@/components/site/site-footer";
-import SiteHeader from "@/components/site/site-header";
+import SiteFooter from "@/components/site/layout/site-footer";
+import SiteHeader from "@/components/site/layout/site-header";
 import "./site.css";
+import "./site-atoms.css";
 
 /** 官网组的标题模板：子页只写业务名，品牌后缀自动拼接 */
 export const metadata: Metadata = {

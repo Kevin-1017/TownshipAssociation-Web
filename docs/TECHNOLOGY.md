@@ -58,7 +58,7 @@ Project/
 | `next` | **`16.3.5` 精确,无 `^`** | 本仓库大量依赖 Next 16 的具体行为(route group、静态导出、RSC 载荷布局);Next 的 minor 会带 breaking change(见 §9 的 RSC 镜像坑)。**升级必须全链路回归:dev → build → 部署演练** |
 | `eslint-config-next` | `16.3.5` 精确 | 必须与 `next` 同版本 |
 | `react` / `react-dom` | `19.2.8` | TDesign React 1.18 需要 React 19 适配器(§8 坑 2),这条链三家里任何一动都要重验后台的 Message/Dialog |
-| `tdesign-react` | `^1.18.3` | 官方 starter 模板(`src/tdesign-starter/`)按 1.x 写,大版本升级移植面会失效 |
+| `tdesign-react` | `^1.18.3` | 后台外壳与登录页按 1.x 手工移植,大版本升级需整体回归后台观感 |
 | `typescript` | `^5` | Next 自带约束 |
 
 `package.json` **没有** `engines` / `packageManager` 字段 —— 与小程序仓库不同,
@@ -124,7 +124,7 @@ app/(admin)/**  ──→ components/admin/** ──→ lib/admin-api.ts ─┼�
   `buildFileUrl` 资源路径清洗、`uploadImage`);
 - `lib/site-api.ts` / `lib/admin-api.ts`:只声明接口与入出参类型,不写业务判断;
 - `lib/types.ts`:与后端 DTO **逐字段镜像**,是契约的 TS 侧单一事实来源;
-- `components/admin/starter/`:模板移植件(§7),`components/site/`:官网板块件。
+- `components/admin/chrome/`:模板移植件(§7),`components/site/`:官网板块件。
 
 ### 目录
 
@@ -137,10 +137,10 @@ src/
 │   └── (admin)/admin/        后台:login · 工作台 · categories · records · donations ·
 │                             notices · events · community(审核台)
 ├── components/
-│   ├── site/                 官网组件(board 板块、reveal 动效、state-blocks 兜底态…)
-│   └── admin/                admin-shell(守卫+Provider) · starter/(移植壳) · form-helpers
+│   ├── site/                 官网组件,按域分组:layout · shared · community · events · foundation · home
+│   └── admin/                chrome/(admin-shell 守卫+Provider · 移植壳) · shared/(form-helpers · ui-state)
 ├── lib/                      api · site-api · admin-api · admin-auth · site-format · types
-└── tdesign-starter/          官方模板整份备查(§7,不参与构建)
+└── types/                    静态资源模块声明(ambient)
 ```
 
 route group 括号 `(site)` / `(admin)` **不进 URL**,作用只是各挂各的布局壳 ——
@@ -169,21 +169,14 @@ route group 括号 `(site)` / `(admin)` **不进 URL**,作用只是各挂各的�
 
 ---
 
-## 7. TDesign starter 模板的移植策略
+## 7. 后台外壳的来历与改法
 
-管理后台视觉不是从零画的,来自官方模板 `tdesign-react-starter`,处理方式分两层:
-
-| 位置 | 身份 | 规则 |
-| --- | --- | --- |
-| `src/tdesign-starter/` | 模板源码**整份备查存档**(Vite + React Router + Less 的完整 SPA) | 只读参考。`tsconfig.json` exclude + ESLint globalIgnores 双重排除,**不参与类型检查、lint、构建**;活跃代码禁止 import 其中任何文件(只允许注释指路) |
-| `src/components/admin/starter/` | 从上面**手工移植**进本站的后台外壳(chrome/menu/header/logo/page…) | 移植时的三个动作:less → CSS Module(手工编译)、Vite 资源引用 → `/public` 直链、演示功能(主题配置抽屉、扫码登录等)整块删除并在注释里注明「原版保留在 src/tdesign-starter/」 |
-
-**为什么不直接 clone 模板仓库当参考**:放进 `src/` 且被排除,学生和 AI 都能离线对照原版;
-代价是仓库里多约 100 个不参与构建的文件。觉得碍眼想移出去之前,先想清楚备查价值
-(登录页、后台壳的每一处「为什么长这样」都靠它兜底)。
-
-**改后台外壳 = 改 `components/admin/starter/`**,不要动 `src/tdesign-starter/`(改了不生效,
-也不会被任何检查拦住,只会污染备查基准)。
+管理后台视觉不是从零画的,来自官方模板 `tdesign-react-starter` 的**手工移植件**,现居
+`src/components/admin/chrome/`(外壳骨架/菜单/顶栏/登录样式)与 `src/components/admin/shared/`
+(form-helpers · ui-state)。移植时做了三件事:less → 手写 CSS Module、模板资源引用 →
+`/public` 直链、演示功能(主题配置抽屉、扫码/注册登录、消息角标等)整块删除。
+模板源码存档已随收尾从仓库移除,**改后台外壳 = 直接改 `components/admin/chrome/`**;
+需要对照原版时看官方仓库 github.com/Tencent/tdesign-react-starter。
 
 ---
 

@@ -1,0 +1,30 @@
+/**
+ * 加载骨架 / 失败态 / 空态（state-blocks）—— 与组件共置，由 state-blocks.tsx 引入。
+ * 首页与详情/列表页直接用 .site-skeleton 的地方均同时引入了本组件，样式随之进入其模块图。
+ */
+
+.site-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    #ebe5d6 25%,
+    #f5f0e4 40%,
+    #ebe5d6 60%
+  );
+  background-size: 400% 100%;
+  animation: site-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes site-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-skeleton {
+    animation: none;
+  }
+}

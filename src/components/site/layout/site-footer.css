@@ -1,0 +1,36 @@
+/**
+ * 页脚（site-footer）—— 与组件共置，由 site-footer.tsx 引入。
+ * 含深底文字层级工具类与键盘 focus 的页脚覆盖（通用规则在 site.css）。
+ */
+
+.site-footer {
+  background-color: var(--brand-navy);
+  color: rgba(255, 255, 255, 0.78);
+}
+.site-footer a {
+  color: rgba(255, 255, 255, 0.85);
+}
+.site-footer a:hover {
+  color: #fff;
+}
+.site-footer-heading {
+  color: #fff;
+}
+.site-footer-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+/* 深色页脚上的文字层级 */
+.t-footer-sub {
+  color: rgba(255, 255, 255, 0.55);
+}
+.t-footer-body {
+  color: rgba(255, 255, 255, 0.78);
+}
+.t-footer-body a {
+  color: #fff;
+}
+
+/* 深底上的 focus 描边换白色 */
+.site-footer :where(a):focus-visible {
+  outline-color: #fff;
+}

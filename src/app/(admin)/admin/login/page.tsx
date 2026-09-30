@@ -1,9 +1,7 @@
 "use client";
 
 /**
- * 管理端登录页：视觉移植自 tdesign starter 模板登录页(背景图/顶栏/大标题/大号表单)，
- * 业务逻辑保持本站实现(adminLogin + describeLoginError，成功存 token/username 跳 /admin)。
- * 模板的注册/扫码/手机号通道为演示功能，未接线，原版保留在 src/tdesign-starter/。
+ * 管理端登录页：仅账密登录(adminLogin + describeLoginError，成功存 token/username 跳 /admin)。
  */
 import { useState } from "react";
 import Image from "next/image";
@@ -18,7 +16,7 @@ import {
 import cn from "classnames";
 import { setAdminToken, setAdminUsername } from "@/lib/admin-auth";
 import { adminLogin, describeLoginError } from "@/lib/admin-api";
-import style from "@/components/admin/starter/login.module.css";
+import style from "./login.module.css";
 
 interface LoginFormValues {
   username?: string;

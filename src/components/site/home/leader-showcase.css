@@ -1,0 +1,20 @@
+/**
+ * 负责人风采轮播卡面（leader-showcase，TDesign Swiper card 模式）——
+ * 与组件共置，由 leader-showcase.tsx 引入。
+ */
+
+/* 填满 .t-swiper__card 滑片的卡面：照片素材到位前用品牌渐变底 + 姓氏首字 */
+.site-leader-photo {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand-bright) 100%);
+}
+.site-leader-initial {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #fff;
+}
