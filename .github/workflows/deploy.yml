@@ -62,6 +62,27 @@ jobs:
       name: production
       url: https://gdutgaginang.cn
     steps:
+      - name: Secret 完整性自检
+        # 早失败早清楚：secret 没填/名字不对/填进了 Variables 时，报「缺哪个」而不是 ssh 的空主机名
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          miss=()
+          [ -n "${DEPLOY_USER:-}" ] || miss+=(DEPLOY_USER)
+          [ -n "${DEPLOY_HOST:-}" ] || miss+=(DEPLOY_HOST)
+          [ -n "${DEPLOY_SSH_KEY:-}" ] || miss+=(DEPLOY_SSH_KEY)
+          [ -n "${DEPLOY_KNOWN_HOSTS:-}" ] || miss+=(DEPLOY_KNOWN_HOSTS)
+          if [ ${#miss[@]} -gt 0 ]; then
+            echo "这些 Secret 取到的是空值：${miss[*]}"
+            echo "检查：是不是填进了 Variables 标签页而不是 Secrets；名字大小写/空格是否一致；本仓是否单独填过"
+            exit 1
+          fi
+          echo "四个 Secret 均非空 → 目标 $DEPLOY_USER@$DEPLOY_HOST"
+
       - uses: actions/download-artifact@v4
         with:
           name: web-tgz
