@@ -1,0 +1,112 @@
+name: deploy-web
+
+# 口径：push 到 master 自动构建；deploy 作业挂 production 环境审批，人工点确认才真上线。
+# 只给 push 配部署——这是公开仓，若给 pull_request / pull_request_target 开部署，
+# 任何人都能靠一个 PR 读到 DEPLOY_SSH_KEY。
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# 同一时刻只跑一条流水，且不允许掐正在进行的部署
+concurrency:
+  group: tsa-deploy-web
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DOMAIN: gdutgaginang.cn
+
+jobs:
+  build:
+    name: 类型检查 + lint + 静态导出
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'   # 与本机 node 主版本一致，避免构建期差异
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      # postbuild 会跑 scripts/flatten-rsc.mjs，out/ 即最终可上机的形状
+      - run: npm run build
+      - name: 产物自检
+        run: |
+          set -euo pipefail
+          test -f out/index.html
+          n=$(find out -type f | wc -l)
+          echo "静态文件数=$n"
+          [ "$n" -ge 100 ]
+      # .env.production 已入库且 NEXT_PUBLIC_API_BASE_URL 留空（同源相对路径），
+      # 所以 CI 构建不需要额外注入；换域名/挪 CDN 时改那个文件即可。
+      - run: tar czf web.tgz -C out .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-tgz
+          path: web.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: 上 HK 生产机（需 Approve）
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://gdutgaginang.cn
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-tgz
+          path: from-build
+
+      - name: 装部署密钥与主机指纹
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          # tr -d '\r' 是必需的：Windows 记事本/剪贴板存进 Secret 会带 CRLF，OpenSSH 解析会失败
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: 上传静态包（只投递到 tsa-deploy 的 incoming，不直接写 /opt/tsa）
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          scp -o StrictHostKeyChecking=yes from-build/web.tgz \
+            "$DEPLOY_USER@$DEPLOY_HOST:incoming/web.tgz"
+
+      - name: 服务器侧换包（备份→切换→自检，任一环节不过会自动回滚）
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          ssh -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" \
+            "sudo /opt/tsa/deploy/deploy.sh web ${GITHUB_SHA::12}"
+
+      - name: 公网冒烟（runner 自己走真公网，比在机上自访更有说服力）
+        run: |
+          set -euo pipefail
+          body=$(curl -sS --max-time 20 "https://$DOMAIN/tsa/health")
+          echo "health=$body"
+          echo "$body" | grep -q '"status":"ok"'
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$DOMAIN/")
+          echo "首页 https=$code"; [ "$code" = "200" ]
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "http://$DOMAIN/")
+          echo "80 跳转=$code"; [ "$code" = "301" ]
+          # 应用层错误响应也一律 HTTP 200 包 JSON 壳，所以鉴权与文档只断言 body/状态码语义
+          curl -sS --max-time 20 "https://$DOMAIN/tsa/admin/community/posts" | grep -q '"code":401'
+          echo "未授权 admin 路由 = 401 壳，符合预期"
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$DOMAIN/tsa/doc.html")
+          echo "doc.html=$code"; [ "$code" = "404" ]
