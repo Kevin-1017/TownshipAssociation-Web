@@ -30,10 +30,13 @@ jobs:
           node-version: '24'   # 与本机 node 主版本一致，避免构建期差异
           cache: npm
       - run: npm ci
+      # 顺序不能反：next-env.d.ts 与 .next/types/routes.d.ts 都被 gitignore，干净仓里不存在，
+      # 而 layout 用的全局 LayoutProps<> 就来自那里 —— 先跑 tsc 必然 TS2304。
+      # next build 会生成这两个文件，且自身已做类型检查；tsc 放在它后面才有效。
+      - run: npm run build
       - run: npx tsc --noEmit
       - run: npm run lint
-      # postbuild 会跑 scripts/flatten-rsc.mjs，out/ 即最终可上机的形状
-      - run: npm run build
+      # postbuild 已随 npm run build 跑过 scripts/flatten-rsc.mjs，out/ 即最终可上机的形状
       - name: 产物自检
         run: |
           set -euo pipefail
