@@ -124,13 +124,20 @@ jobs:
           set -euo pipefail
           body=$(curl -sS --max-time 20 "https://$DOMAIN/tsa/health")
           echo "health=$body"
-          echo "$body" | grep -q '"status":"ok"'
+          # 一律用 case 而不是 | grep -q：pipefail 下 grep 提前退出会让上游 curl 吃 SIGPIPE 判失败
+          case "$body" in
+            *'"status":"ok"'*) ;;
+            *) echo "health 响应里没有 status:ok"; exit 1 ;;
+          esac
           code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$DOMAIN/")
           echo "首页 https=$code"; [ "$code" = "200" ]
           code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "http://$DOMAIN/")
           echo "80 跳转=$code"; [ "$code" = "301" ]
           # 应用层错误响应也一律 HTTP 200 包 JSON 壳，所以鉴权与文档只断言 body/状态码语义
-          curl -sS --max-time 20 "https://$DOMAIN/tsa/admin/community/posts" | grep -q '"code":401'
-          echo "未授权 admin 路由 = 401 壳，符合预期"
+          adm=$(curl -sS --max-time 20 "https://$DOMAIN/tsa/admin/community/posts")
+          case "$adm" in
+            *'"code":401'*) echo "未授权 admin 路由 = 401 壳，符合预期" ;;
+            *) echo "未授权 admin 路由返回异常：$adm"; exit 1 ;;
+          esac
           code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$DOMAIN/tsa/doc.html")
           echo "doc.html=$code"; [ "$code" = "404" ]
