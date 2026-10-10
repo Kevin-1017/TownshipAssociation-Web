@@ -1,0 +1,130 @@
+/* Kevin 个人主页样式 —— 作用域收在 .kevin-root 内，不影响官网/后台 */
+
+.kevin-root {
+  --kv-bg: #0b0f16;
+  --kv-bg-2: #111726;
+  --kv-fg: #e6edf7;
+  --kv-soft: #93a1b5;
+  --kv-accent: #5eead4; /* 青 */
+  --kv-accent-2: #a78bfa; /* 紫 */
+  --kv-warn: #f59e0b;
+  --kv-line: rgba(230, 237, 247, 0.08);
+  --kv-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+
+  color-scheme: dark;
+  background: var(--kv-bg);
+  color: var(--kv-fg);
+  font-family: "Segoe UI", system-ui, -apple-system, "Microsoft YaHei", sans-serif;
+}
+
+.kevin-mono {
+  font-family: var(--kv-mono);
+}
+
+/* 顶部极光背景：两团缓慢漂移的径向渐变，纯装饰 */
+.kevin-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.kevin-aurora::before,
+.kevin-aurora::after {
+  content: "";
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.16;
+  animation: kv-drift 26s ease-in-out infinite alternate;
+}
+.kevin-aurora::before {
+  background: var(--kv-accent);
+  top: -30vmax;
+  left: -12vmax;
+}
+.kevin-aurora::after {
+  background: var(--kv-accent-2);
+  top: -22vmax;
+  right: -16vmax;
+  animation-delay: -13s;
+}
+@keyframes kv-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(7vmax, 4vmax) scale(1.15);
+  }
+}
+
+/* 打字机光标 */
+.kevin-caret {
+  display: inline-block;
+  width: 0.55em;
+  margin-left: 2px;
+  background: var(--kv-accent);
+  animation: kv-blink 1s steps(1) infinite;
+}
+@keyframes kv-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 倾斜卡片：3D 由 JS 设 transform，这里只管过渡与复位手感 */
+.kevin-tilt {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+  will-change: transform;
+}
+.kevin-tilt:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--kv-line);
+}
+
+/* 彩蛋：emoji 雨 */
+.kevin-rain span {
+  position: fixed;
+  top: -2em;
+  font-size: 1.6rem;
+  animation: kv-fall linear forwards;
+  pointer-events: none;
+  z-index: 60;
+}
+@keyframes kv-fall {
+  to {
+    transform: translateY(110vh) rotate(30deg);
+  }
+}
+
+/* 键盘彩蛋浮层 */
+.kevin-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 70;
+  animation: kv-toast-in 0.25s ease-out;
+}
+@keyframes kv-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kevin-aurora::before,
+  .kevin-aurora::after,
+  .kevin-caret,
+  .kevin-rain span,
+  .kevin-toast {
+    animation: none;
+  }
+  .kevin-tilt {
+    transition: none;
+  }
+}
