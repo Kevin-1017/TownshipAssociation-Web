@@ -23,6 +23,7 @@ jobs:
   build:
     name: 类型检查 + lint + 静态导出
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,6 +59,7 @@ jobs:
     name: 上 HK 生产机（需 Approve）
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: production
       url: https://gdutgaginang.cn
@@ -107,7 +109,8 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           set -euo pipefail
-          scp -o StrictHostKeyChecking=yes from-build/web.tgz \
+          # BatchMode：任何交互式提示（口令/密码询问）直接报错退出，而不是吊死到超时
+          scp -o StrictHostKeyChecking=yes -o BatchMode=yes from-build/web.tgz \
             "$DEPLOY_USER@$DEPLOY_HOST:incoming/web.tgz"
 
       - name: 服务器侧换包（备份→切换→自检，任一环节不过会自动回滚）
@@ -116,13 +119,14 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           set -euo pipefail
-          ssh -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" \
+          ssh -o StrictHostKeyChecking=yes -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" \
             "sudo /opt/tsa/deploy/deploy.sh web ${GITHUB_SHA::12}"
 
       - name: 公网冒烟（runner 自己走真公网，比在机上自访更有说服力）
         run: |
           set -euo pipefail
-          body=$(curl -sS --max-time 20 "https://$DOMAIN/tsa/health")
+          # health 带 --retry：换包后服务重启与公网探活之间总有几秒窗口，重试比误报红便宜
+          body=$(curl -sS --retry 3 --retry-delay 2 --max-time 30 "https://$DOMAIN/tsa/health")
           echo "health=$body"
           # 一律用 case 而不是 | grep -q：pipefail 下 grep 提前退出会让上游 curl 吃 SIGPIPE 判失败
           case "$body" in
