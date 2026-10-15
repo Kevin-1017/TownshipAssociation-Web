@@ -97,6 +97,9 @@ GET /tsa/events                query: page(默认1), pageSize(默认10,后端钳
 GET /tsa/community/posts       query: page, pageSize, type(food|campus), cuisine, region(code), keyword
                                → PageVO<CommunityPost>             // 只含已过审(status=1),发布时间倒序
 GET /tsa/community/posts/{id}  → CommunityPost(含 commentsList,评论同样只含已过审)
+
+GET /tsa/lineups               → Lineup[]                          // CS 道具点位全量,地图→点位→道具→id 升序,
+                                                                   // 不分页(服务端钳 200);kevin/csgo 运行时拉取
 ```
 
 - **事件正文不进 Web**:列表 VO 即全部(`id title cover summary articleUrl startTime status`),
@@ -173,6 +176,19 @@ POST   /tsa/admin/events/cover   multipart 字段名 "file"(带 admin token)→ 
 
 `cover` 传上传返回的相对路径;`startTime` 为 ISO 8601 带时区(`pickerDateTimeToApi` 统一 +08:00 口径)。
 
+### CS 道具点位(2026-10-15 起可管理,kevin/csgo 数据源)
+
+```
+GET    /tsa/admin/lineups      → Lineup[]             // 与公开侧同源同形,不分页
+POST   /tsa/admin/lineups      body: LineupSaveRequest → string(id)
+PUT    /tsa/admin/lineups/{id} body: LineupSaveRequest → void
+DELETE /tsa/admin/lineups/{id} → void
+POST   /tsa/admin/lineups/image  multipart 字段名 "file"(带 admin token)→ { path }  // 相对路径回填 images
+```
+
+保存为**整单覆写**(同公告、非 events 的 null=不改):表单带齐全部字段;`images` 传空数组=清空截图。
+`kind` 枚举 `smoke|flash|molotov|decoy`(后端 @Pattern);`steps` 1..20 条、单条 ≤200 字(管理页按「每行一步」录入拆分)。
+
 ### 社区审核台(动态 + 评论)
 
 ```
@@ -199,7 +215,7 @@ GET /tsa/files/<uuid>.<ext>      公开,按扩展名回 Content-Type
 - 展示时经 `lib/api.ts` 的 `buildFileUrl()` 拼绝对址:外链(http 开头)原样透传;
   **生产构建 `API_BASE` 为空串(同源),相对路径本身可达**,函数对两种形态都正确;
 - 上传端点选择:社区图 → `/tsa/community/uploads`(公开);后台封面 → `/tsa/admin/events/cover`
-  (Bearer)。小程序的 `/tsa/files`(微信 Bearer 体系)与后台无关,Web 不调。
+  (Bearer);后台点位截图 → `/tsa/admin/lineups/image`(Bearer)。小程序的 `/tsa/files`(微信 Bearer 体系)与后台无关,Web 不调。
 
 ---
 

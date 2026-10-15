@@ -22,6 +22,7 @@ import {
   CalendarIcon,
   ChatIcon,
   DashboardIcon,
+  FlagIcon,
   HeartIcon,
   NotificationIcon,
   StarIcon,
@@ -49,6 +50,7 @@ const MENU_ITEMS: StarterMenuItem[] = [
   { path: "/admin/donations", label: "捐赠鸣谢", icon: <HeartIcon /> },
   { path: "/admin/notices", label: "公告管理", icon: <NotificationIcon /> },
   { path: "/admin/events", label: "乡会事件", icon: <CalendarIcon /> },
+  { path: "/admin/lineups", label: "CS 道具点位", icon: <FlagIcon /> },
   {
     path: "/admin/community",
     label: "动态审核",

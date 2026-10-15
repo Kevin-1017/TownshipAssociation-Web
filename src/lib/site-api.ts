@@ -17,6 +17,7 @@ import type {
   DonationRecord,
   EventListItem,
   FoundationHome,
+  Lineup,
   Notice,
   PageVO,
   RewardRecords,
@@ -82,6 +83,16 @@ export function fetchEvents(query: EventsQuery = {}): Promise<PageVO<EventListIt
 }
 
 // 事件详情（GET /tsa/events/{id}）web 端不使用：列表直跳公众号，无详情页。
+
+// ============ CS 道具点位（kevin/csgo 指南） ============
+
+/**
+ * GET /tsa/lineups —— 点位全量（公开读；kevin 页在浏览器运行时拉取，静态导出无 SSR 时机）。
+ * 排序：地图→点位→道具→id 升序；服务端钳 200 上限，不分页。
+ */
+export function fetchLineups(): Promise<Lineup[]> {
+  return request<Lineup[]>("/tsa/lineups");
+}
 
 // ============ 社区动态（广场） ============
 

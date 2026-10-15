@@ -9,3 +9,14 @@
   min-width: 760px;
   overflow: auto;
 }
+
+/*
+ * 移动端适配（2026-10-15）：窄视口放开内容区 760px 最小宽度——
+ * 整页不再横向撑开/缩放，窄屏下由 TDesign 内容器自带横向滚动接管超宽表格，
+ * 新页面还叠加列裁剪（use-is-narrow）。900px 与 ui-state.tsx 侧栏自动折叠阈值同口径。
+ */
+@media (max-width: 900px) {
+  .sideContainer {
+    min-width: 0;
+  }
+}

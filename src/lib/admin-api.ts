@@ -20,6 +20,8 @@ import type {
   DonationAdminRecord,
   EventListItem,
   FoundationHome,
+  Lineup,
+  LineupSaveRequest,
   Notice,
   NoticeSaveRequest,
   PageVO,
@@ -227,6 +229,32 @@ export function deleteEvent(id: string): Promise<void> {
 /** 事件封面上传：admin 令牌走 /tsa/admin/events/cover（微信 Bearer 的 /tsa/files 与后台无关） */
 export async function uploadEventCover(file: File): Promise<string> {
   const r = await uploadImage("/tsa/admin/events/cover", file, token());
+  return r.path;
+}
+
+// ============ CS 道具点位管理（kevin/csgo 指南数据源，整单覆写语义见 LineupSaveRequest） ============
+
+/** GET /tsa/admin/lineups —— 全量列表（无状态列、与公开侧同形同排序；服务端钳 200，不分页） */
+export function fetchAdminLineups(): Promise<Lineup[]> {
+  return request<Lineup[]>("/tsa/admin/lineups", { token: token() });
+}
+
+export function createLineup(body: LineupSaveRequest): Promise<string> {
+  return request<string>("/tsa/admin/lineups", { method: "POST", body, token: token() });
+}
+
+/** 整单覆写（后端非 events 的 null=不改口径）：表单必须带齐字段，images 传空数组=清空截图 */
+export function updateLineup(id: string, body: LineupSaveRequest): Promise<void> {
+  return request<void>(`/tsa/admin/lineups/${id}`, { method: "PUT", body, token: token() });
+}
+
+export function deleteLineup(id: string): Promise<void> {
+  return request<void>(`/tsa/admin/lineups/${id}`, { method: "DELETE", token: token() });
+}
+
+/** 点位截图上传（单次单张，回相对路径；最多 9 张由表单侧把关，超限后端保存时 400） */
+export async function uploadLineupImage(file: File): Promise<string> {
+  const r = await uploadImage("/tsa/admin/lineups/image", file, token());
   return r.path;
 }
 
