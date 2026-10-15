@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAsyncData } from "@/components/site/shared/use-async-data";
 import { buildFileUrl } from "@/lib/api";
 import { NADE_LABEL } from "@/lib/lineups";
@@ -63,6 +63,23 @@ export default function LineupBrowser() {
 
   const [map, setMap] = useState("全部");
   const [kind, setKind] = useState<string>("全部");
+  // 截图灯箱：存打开中的图 URL（null=关）。不新开窗口，原地预览。
+  const [preview, setPreview] = useState<string | null>(null);
+
+  // 灯箱开着时：Esc 关闭 + 锁页面滚动（关灯箱自动还原）
+  useEffect(() => {
+    if (!preview) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPreview(null);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [preview]);
 
   const list = all.filter(
     (l) => (map === "全部" || l.map === map) && (kind === "全部" || l.kind === kind),
@@ -155,12 +172,12 @@ export default function LineupBrowser() {
                           const url = buildFileUrl(img);
                           if (!url) return null;
                           return (
-                            <a
+                            <button
                               key={`${img}-${i}`}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="点开看大图"
+                              type="button"
+                              onClick={() => setPreview(url)}
+                              title="点击预览大图"
+                              className="block cursor-zoom-in rounded-lg"
                             >
                               <img
                                 src={url}
@@ -168,7 +185,7 @@ export default function LineupBrowser() {
                                 loading="lazy"
                                 className="h-24 w-40 rounded-lg border border-[var(--kv-line)] object-cover opacity-90 transition-opacity hover:opacity-100"
                               />
-                            </a>
+                            </button>
                           );
                         })}
                       </div>
@@ -184,6 +201,30 @@ export default function LineupBrowser() {
             </section>
           ))}
         </>
+      )}
+
+      {preview && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="截图预览"
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          onClick={() => setPreview(null)}
+        >
+          <img
+            src={preview}
+            alt="点位截图大图"
+            className="max-h-[85vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
+          />
+          <button
+            type="button"
+            aria-label="关闭预览"
+            onClick={() => setPreview(null)}
+            className="kevin-mono absolute right-4 top-4 rounded-full border border-[var(--kv-line)] bg-[var(--kv-bg-2)] px-3 py-1 text-sm text-[var(--kv-soft)] hover:text-[var(--kv-fg)]"
+          >
+            ✕ 关闭
+          </button>
+        </div>
       )}
     </div>
   );
