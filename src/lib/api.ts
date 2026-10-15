@@ -97,12 +97,17 @@ export async function request<T>(
  * multipart 图片上传（字段名钉死 file）：走同一 axios 实例与 Result 解包口径。
  * path 例：/tsa/community/uploads（公开）或 /tsa/admin/events/cover（带 admin token）；
  * 成功回 {path:"/tsa/files/<uuid>.<ext>"} 相对路径。
+ * 客户端先按后端 UploadRules 同口径的 2MB 拦一道：超大图直接给中文提示，
+ * 不再吃网关 413 的裸文（历史 bug：nginx 先于应用拦截，提示成了英文状态行）。
  */
 export async function uploadImage(
   path: string,
   file: File,
   token?: string | null,
 ): Promise<FileUploadResult> {
+  if (file.size > 2 * 1024 * 1024) {
+    throw new ApiError(400, "图片超过 2MB，请压缩后再上传");
+  }
   const form = new FormData();
   form.append("file", file);
   const headers: Record<string, string> = {};
