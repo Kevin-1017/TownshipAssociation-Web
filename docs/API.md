@@ -98,7 +98,7 @@ GET /tsa/community/posts       query: page, pageSize, type(food|campus), cuisine
                                → PageVO<CommunityPost>             // 只含已过审(status=1),发布时间倒序
 GET /tsa/community/posts/{id}  → CommunityPost(含 commentsList,评论同样只含已过审)
 
-GET /tsa/lineups               → Lineup[]                          // CS 道具点位全量,地图→点位→道具→id 升序,
+GET /tsa/lineups               → Lineup[]                          // CS 道具点位全量,地图→道具→id 升序,
                                                                    // 不分页(服务端钳 200);kevin/csgo 运行时拉取
 ```
 
@@ -187,7 +187,8 @@ POST   /tsa/admin/lineups/image  multipart 字段名 "file"(带 admin token)→ 
 ```
 
 保存为**整单覆写**(同公告、非 events 的 null=不改):表单带齐全部字段;`images` 传空数组=清空截图。
-`kind` 枚举 `smoke|flash|molotov|decoy`(后端 @Pattern);`steps` 1..20 条、单条 ≤200 字(管理页按「每行一步」录入拆分)。
+`kind` 枚举为中文值 `烟|闪|火|雷|诱饵`(后端 @Pattern);2026-10-16 精简起**无 `site`(归类点位)与 `steps`(分步操作)**,
+表单口径:地图 → 点位名称(第二位) → 道具类型 → 投掷方式(原分步操作位置) → 备注 → 截图。
 
 ### 社区审核台(动态 + 评论)
 

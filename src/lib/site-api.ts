@@ -88,7 +88,7 @@ export function fetchEvents(query: EventsQuery = {}): Promise<PageVO<EventListIt
 
 /**
  * GET /tsa/lineups —— 点位全量（公开读；kevin 页在浏览器运行时拉取，静态导出无 SSR 时机）。
- * 排序：地图→点位→道具→id 升序；服务端钳 200 上限，不分页。
+ * 排序：地图→道具→id 升序；服务端钳 200 上限，不分页。
  */
 export function fetchLineups(): Promise<Lineup[]> {
   return request<Lineup[]>("/tsa/lineups");

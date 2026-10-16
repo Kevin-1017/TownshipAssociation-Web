@@ -5,8 +5,10 @@
  * POST /tsa/admin/lineups/image —— 官网 kevin/csgo 指南的唯一数据源，本页增删改后前台即时生效。
  * 全量 ≤200 条（后端钳上限），一次拉回后客户端关键字过滤，无服务端分页。
  * 保存为「整单覆写」语义（同公告、非 events 的 null=不改）：images 传空数组=清空截图。
+ * 2026-10-16 精简：删点位（site）与分步操作（steps）；道具类型改中文枚举（烟/闪/火/雷/诱饵）；
+ * 表单口径——点位名称紧随地图第二位填写，投掷方式挪到原分步操作的位置。
  * 移动端：内容区已放开 760px 最小宽度（app-layout.module.css），本页再按 useIsNarrow
- * 裁剪表格列（名称列内嵌 地图·点位·道具 摘要）并堆叠工具栏、Dialog 收窄。
+ * 裁剪表格列（名称列内嵌 地图·道具 摘要）并堆叠工具栏、Dialog 收窄。
  */
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,22 +36,17 @@ import {
   uploadLineupImage,
 } from "@/lib/admin-api";
 import { buildFileUrl } from "@/lib/api";
-import { NADE_LABEL, NADE_OPTIONS } from "@/lib/lineups";
+import { NADE_OPTIONS } from "@/lib/lineups";
 import { useIsNarrow } from "@/components/admin/shared/use-is-narrow";
 import type { Lineup, LineupSaveRequest, NadeKind } from "@/lib/types";
 
-/** 步骤录入口径：每行一条（提交按行拆分、空行忽略）；上限与后端 LineupSaveRequest 校验一致 */
-const STEPS_MAX = 20;
-const STEP_MAX_LEN = 200;
 const IMAGES_MAX = 9;
 
 type LineupFormValues = {
   map?: string;
-  site?: string;
   kind?: NadeKind;
   name?: string;
   style?: string;
-  steps?: string;
   note?: string;
 };
 
@@ -70,14 +67,13 @@ export default function AdminLineupsPage() {
     queryFn: fetchAdminLineups,
   });
 
-  // 客户端关键字过滤：地图/点位/名称/方式/道具中文标签命中任一即保留（数据量小，不值得走后端分页）
+  // 客户端关键字过滤：地图/名称/道具/方式命中任一即保留（数据量小，不值得走后端分页）
   const rows = useMemo(() => {
     const all = query.data ?? [];
     const kw = keyword.trim().toLowerCase();
     if (!kw) return all;
     return all.filter((l) =>
-      [l.map, l.site, l.name, l.style, NADE_LABEL[l.kind] ?? l.kind]
-        .some((v) => v.toLowerCase().includes(kw)),
+      [l.map, l.name, l.kind, l.style].some((v) => v.toLowerCase().includes(kw)),
     );
   }, [query.data, keyword]);
 
@@ -128,27 +124,12 @@ export default function AdminLineupsPage() {
     const valid = await form.validate();
     if (valid !== true) return;
     const v = form.getFieldsValue(true) as LineupFormValues;
-    const steps = (v.steps ?? "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-    if (steps.length === 0) {
-      MessagePlugin.warning("步骤每行一条，至少填一步");
-      return;
-    }
-    if (steps.length > STEPS_MAX) {
-      MessagePlugin.warning(`步骤最多 ${STEPS_MAX} 条`);
-      return;
-    }
-    if (steps.some((s) => s.length > STEP_MAX_LEN)) {
-      MessagePlugin.warning(`单步描述最长 ${STEP_MAX_LEN} 字`);
-      return;
-    }
     const body: LineupSaveRequest = {
       map: (v.map ?? "").trim(),
-      site: (v.site ?? "").trim(),
       // kind 的 required 规则已在 form.validate 把关，这里只做类型收口
-      kind: (v.kind ?? "smoke") as NadeKind,
+      kind: (v.kind ?? "烟") as NadeKind,
       name: (v.name ?? "").trim(),
       style: (v.style ?? "").trim(),
-      steps,
       note: (v.note ?? "").trim() || null,
       images,
     };
@@ -190,11 +171,9 @@ export default function AdminLineupsPage() {
               </span>
               <span className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                 <Tag theme="primary" variant="light" size="small">
-                  {NADE_LABEL[row.kind]}
+                  {row.kind}
                 </Tag>
-                <span className="truncate">
-                  {row.map} · {row.site}
-                </span>
+                <span className="truncate">{row.map}</span>
                 {row.images.length > 0 && <span>{row.images.length} 图</span>}
               </span>
             </div>
@@ -239,24 +218,17 @@ export default function AdminLineupsPage() {
           ),
         },
         { colKey: "map", title: "地图", width: 100 },
-        { colKey: "site", title: "点位", width: 110 },
         {
           colKey: "kind",
           title: "道具",
           width: 80,
           cell: ({ row }: { row: Lineup }) => (
             <Tag theme="primary" variant="light" size="small">
-              {NADE_LABEL[row.kind]}
+              {row.kind}
             </Tag>
           ),
         },
         { colKey: "style", title: "方式", width: 90 },
-        {
-          colKey: "steps",
-          title: "步骤",
-          width: 70,
-          cell: ({ row }: { row: Lineup }) => `${row.steps.length} 步`,
-        },
         opColumn,
       ];
 
@@ -268,12 +240,12 @@ export default function AdminLineupsPage() {
         <div>
           <h1 className="text-xl font-semibold">CS 道具点位</h1>
           <p className="mt-1 text-sm text-gray-500">
-            配置官网 kevin/csgo 指南：点位、分步说明与截图，保存后前台即时生效。
+            配置官网 kevin/csgo 指南：点位名称、投掷方式与截图，保存后前台即时生效。
           </p>
         </div>
         <div className="flex w-full items-center gap-2 md:w-auto">
           <Input
-            placeholder="搜地图/点位/名称"
+            placeholder="搜地图/名称/道具"
             clearable
             value={keyword}
             className="min-w-0 flex-1 md:w-52 md:flex-none"
@@ -312,11 +284,9 @@ export default function AdminLineupsPage() {
           labelAlign="top"
           initialData={{
             map: editing?.map,
-            site: editing?.site,
             kind: editing?.kind,
             name: editing?.name,
             style: editing?.style,
-            steps: editing?.steps.join("\n"),
             note: editing?.note ?? undefined,
           }}
         >
@@ -324,26 +294,17 @@ export default function AdminLineupsPage() {
             <Form.FormItem label="地图" name="map" rules={[{ required: true, message: "请填写地图名" }]}>
               <Input placeholder="如 Mirage / Inferno" maxlength={32} clearable />
             </Form.FormItem>
-            <Form.FormItem label="点位" name="site" rules={[{ required: true, message: "请填写点位名" }]}>
-              <Input placeholder="归类点位名，如「警家」" maxlength={32} clearable />
+            {/* 点位名称紧随地图，第二位填写（2026-10-16 表单口径） */}
+            <Form.FormItem label="点位名称" name="name" rules={[{ required: true, message: "请填写点位名称" }]}>
+              <Input placeholder="一句话名字，≤64 字" maxlength={64} clearable />
             </Form.FormItem>
             <Form.FormItem label="道具类型" name="kind" rules={[{ required: true, message: "请选择道具类型" }]}>
               <Select placeholder="请选择" options={NADE_OPTIONS} style={{ width: "100%" }} />
             </Form.FormItem>
-            <Form.FormItem label="投掷方式" name="style" rules={[{ required: true, message: "请填写投掷方式标签" }]}>
-              <Input placeholder="站位 / 跳投 / Timing / 反弹…" maxlength={32} clearable />
-            </Form.FormItem>
           </div>
-          <Form.FormItem label="点位名称" name="name" rules={[{ required: true, message: "请填写点位名称" }]}>
-            <Input placeholder="一句话名字，≤64 字" maxlength={64} clearable />
-          </Form.FormItem>
-          <Form.FormItem
-            label="分步操作"
-            name="steps"
-            rules={[{ required: true, message: "请至少填写一步" }]}
-            help={`每行一步（站位 → 瞄准参照 → 投掷动作），最多 ${STEPS_MAX} 步、单步 ≤${STEP_MAX_LEN} 字`}
-          >
-            <Textarea placeholder={"站 T 二楼口栏杆最左侧，背贴墙\n平视对准对面电线杆与屋檐交界点\n大跳松 W 落定后原地投"} autosize={{ minRows: 4, maxRows: 12 }} />
+          {/* 投掷方式占用原「分步操作」的整行位置 */}
+          <Form.FormItem label="投掷方式" name="style" rules={[{ required: true, message: "请填写投掷方式标签" }]}>
+            <Input placeholder="站位 / 跳投 / Timing / 反弹…" maxlength={32} clearable />
           </Form.FormItem>
           <Form.FormItem label="备注" name="note" help="用途/实战提醒，≤500 字，可空">
             <Textarea placeholder="如「双封烟的第一颗」" autosize={{ minRows: 2, maxRows: 6 }} />

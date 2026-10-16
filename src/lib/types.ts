@@ -174,27 +174,24 @@ export interface EventListItem {
 
 // ============ CS 道具点位（kevin/csgo 指南：LineupController / AdminLineupController） ============
 
-/** 道具类型（与后端 csgo_lineup.kind 枚举一致，@Pattern 校验） */
-export type NadeKind = "smoke" | "flash" | "molotov" | "decoy";
+/** 道具类型（后端 csgo_lineup.kind 中文值枚举，@Pattern 校验；2026-10-16 起不再用英文码） */
+export type NadeKind = "烟" | "闪" | "火" | "雷" | "诱饵";
 
 /**
  * 道具点位（LineupVO）—— kevin 前台浏览器与管理端共用同一形状。
  * 无业务时间下发；VO 无 @JsonInclude(NON_NULL)，note 键恒在可为 null；
- * steps/images 后端出口统一为数组（images 空数组=无图），展示时相对路径过 buildFileUrl 拼绝对址。
+ * images 后端出口统一为数组（空数组=无图），展示时相对路径过 buildFileUrl 拼绝对址。
+ * 2026-10-16 精简：删 site（归类点位名）与 steps（分步操作）。
  */
 export interface Lineup {
   id: string;
   /** 地图名（前台页签按本列去重生成） */
   map: string;
-  /** 归类点位名，如「警家」「香蕉道」 */
-  site: string;
   kind: NadeKind;
-  /** 一句话名字 */
+  /** 点位一句话名字 */
   name: string;
   /** 投掷方式标签：站位/跳投/Timing 等 */
   style: string;
-  /** 分步操作（按顺序） */
-  steps: string[];
   /** 用途或备注，可空 */
   note: string | null;
   /** 截图相对路径数组（空数组=无图） */
@@ -209,15 +206,11 @@ export interface Lineup {
 export interface LineupSaveRequest {
   /** 地图名，必填，≤32 字 */
   map: string;
-  /** 点位名，必填，≤32 字 */
-  site: string;
   kind: NadeKind;
   /** 点位名字，必填，≤64 字 */
   name: string;
   /** 方式标签，必填，≤32 字 */
   style: string;
-  /** 步骤，1..20 条、每条 ≤200 字 */
-  steps: string[];
   /** 备注，选填，≤500 字 */
   note?: string | null;
   /** 截图相对路径数组，最多 9 张 */

@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAsyncData } from "@/components/site/shared/use-async-data";
 import { buildFileUrl } from "@/lib/api";
-import { NADE_LABEL } from "@/lib/lineups";
+import { NADE_KINDS } from "@/lib/lineups";
 import { fetchLineups } from "@/lib/site-api";
 import type { Lineup, NadeKind } from "@/lib/types";
 
-/** 道具类型 → 主题色（跟着 kevin.css 的变量走） */
+/** 道具类型（中文值）→ 主题色（跟着 kevin.css 的变量走） */
 const KIND_COLOR: Record<NadeKind, string> = {
-  smoke: "var(--kv-soft)",
-  flash: "var(--kv-warn)",
-  molotov: "#f87171",
-  decoy: "var(--kv-accent-2)",
+  烟: "var(--kv-soft)",
+  闪: "var(--kv-warn)",
+  火: "#f87171",
+  雷: "#eab308",
+  诱饵: "var(--kv-accent-2)",
 };
 
 function Chip({
@@ -40,9 +41,10 @@ function Chip({
 }
 
 /**
- * 道具列表浏览器：地图页签 × 道具类型过滤，条目默认收起、点开看步骤与截图。
+ * 道具列表浏览器：地图页签 × 道具类型过滤，条目默认收起、点开看投掷方式与截图。
  * 数据来自后端 GET /tsa/lineups（管理端 /admin/lineups 配置）——静态导出页在浏览器
  * 运行时拉取；取数失败给重试出口，不回退打样数据（单一数据源，避免误导）。
+ * 2026-10-16 精简：无 点位(site) 分组与 分步操作(steps)；kind 即中文值。
  */
 export default function LineupBrowser() {
   const { state, reload } = useAsyncData(fetchLineups);
@@ -57,7 +59,7 @@ export default function LineupBrowser() {
     [all],
   );
   const kinds = useMemo(
-    () => ["全部", ...(Object.keys(NADE_LABEL) as NadeKind[])] as const,
+    () => ["全部", ...NADE_KINDS] as const,
     [],
   );
 
@@ -85,9 +87,9 @@ export default function LineupBrowser() {
     (l) => (map === "全部" || l.map === map) && (kind === "全部" || l.kind === kind),
   );
 
-  // 按 地图 › 点位 分组渲染
+  // 按 地图 分组渲染（2026-10-16 起不再按点位分组）
   const grouped = list.reduce<Record<string, Lineup[]>>((acc, l) => {
-    const key = `${l.map} · ${l.site}`;
+    const key = l.map;
     (acc[key] ??= []).push(l);
     return acc;
   }, {});
@@ -120,7 +122,7 @@ export default function LineupBrowser() {
             <span className="mx-1 text-[var(--kv-line)]">|</span>
             {kinds.map((k) => (
               <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
-                {k === "全部" ? "全部道具" : NADE_LABEL[k as NadeKind]}
+                {k === "全部" ? "全部道具" : k}
               </Chip>
             ))}
           </div>
@@ -151,7 +153,7 @@ export default function LineupBrowser() {
                         className="kevin-mono shrink-0 rounded px-1.5 py-0.5 text-[11px]"
                         style={{ color: KIND_COLOR[l.kind], border: `1px solid ${KIND_COLOR[l.kind]}` }}
                       >
-                        {NADE_LABEL[l.kind]}
+                        {l.kind}
                       </span>
                       <span className="font-medium">{l.name}</span>
                       <span className="kevin-mono ml-auto shrink-0 text-xs text-[var(--kv-soft)]">
@@ -161,11 +163,6 @@ export default function LineupBrowser() {
                         ›
                       </span>
                     </summary>
-                    <ol className="mt-3 list-inside list-decimal space-y-1.5 text-sm leading-[1.8] text-[var(--kv-soft)]">
-                      {l.steps.map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                    </ol>
                     {l.images.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {l.images.map((img, i) => {
