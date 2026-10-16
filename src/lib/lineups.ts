@@ -12,3 +12,23 @@ export const NADE_OPTIONS: { label: NadeKind; value: NadeKind }[] = NADE_KINDS.m
   value: k,
   label: k,
 }));
+
+/** 地图候选（2026-10-16 用户拍板的十张图；admin 表单下拉用，后端 map 列仍为自由文本 ≤32） */
+export const CS_MAPS = [
+  "Dust2",
+  "Mirage",
+  "Inferno",
+  "Nuke",
+  "Train",
+  "Overpass",
+  "Vertigo",
+  "Cobblestone",
+  "Cache",
+  "Ancient",
+] as const;
+
+/** 管理端地图 Select 选项 */
+export const MAP_OPTIONS: { label: string; value: string }[] = CS_MAPS.map((m) => ({
+  value: m,
+  label: m,
+}));

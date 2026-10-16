@@ -156,13 +156,14 @@ export default function LineupBrowser() {
                         {l.kind}
                       </span>
                       <span className="font-medium">{l.name}</span>
-                      <span className="kevin-mono ml-auto shrink-0 text-xs text-[var(--kv-soft)]">
-                        {l.style}
-                      </span>
-                      <span aria-hidden className="text-[var(--kv-soft)] group-open:rotate-90 transition-transform">
+                      <span aria-hidden className="kevin-mono ml-auto text-[var(--kv-soft)] group-open:rotate-90 transition-transform">
                         ›
                       </span>
                     </summary>
+                    {/* 投掷方式占用原分步操作的位置（2026-10-16 用户口径：挪到指南卡片展开区首行） */}
+                    <p className="kevin-mono mt-3 text-sm leading-[1.8] text-[var(--kv-soft)]">
+                      {l.style}
+                    </p>
                     {l.images.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {l.images.map((img, i) => {

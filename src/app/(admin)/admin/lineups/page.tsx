@@ -6,7 +6,8 @@
  * 全量 ≤200 条（后端钳上限），一次拉回后客户端关键字过滤，无服务端分页。
  * 保存为「整单覆写」语义（同公告、非 events 的 null=不改）：images 传空数组=清空截图。
  * 2026-10-16 精简：删点位（site）与分步操作（steps）；道具类型改中文枚举（烟/闪/火/雷/诱饵）；
- * 表单口径——点位名称紧随地图第二位填写，投掷方式挪到原分步操作的位置。
+ * 表单口径——地图为十图下拉（候选见 lib/lineups.ts 的 CS_MAPS），点位名称紧随其后第二位填写，
+ * 投掷方式挪到原分步操作的位置。
  * 移动端：内容区已放开 760px 最小宽度（app-layout.module.css），本页再按 useIsNarrow
  * 裁剪表格列（名称列内嵌 地图·道具 摘要）并堆叠工具栏、Dialog 收窄。
  */
@@ -36,7 +37,7 @@ import {
   uploadLineupImage,
 } from "@/lib/admin-api";
 import { buildFileUrl } from "@/lib/api";
-import { NADE_OPTIONS } from "@/lib/lineups";
+import { MAP_OPTIONS, NADE_OPTIONS } from "@/lib/lineups";
 import { useIsNarrow } from "@/components/admin/shared/use-is-narrow";
 import type { Lineup, LineupSaveRequest, NadeKind } from "@/lib/types";
 
@@ -291,8 +292,8 @@ export default function AdminLineupsPage() {
           }}
         >
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-            <Form.FormItem label="地图" name="map" rules={[{ required: true, message: "请填写地图名" }]}>
-              <Input placeholder="如 Mirage / Inferno" maxlength={32} clearable />
+            <Form.FormItem label="地图" name="map" rules={[{ required: true, message: "请选择地图" }]}>
+              <Select placeholder="请选择" options={MAP_OPTIONS} style={{ width: "100%" }} />
             </Form.FormItem>
             {/* 点位名称紧随地图，第二位填写（2026-10-16 表单口径） */}
             <Form.FormItem label="点位名称" name="name" rules={[{ required: true, message: "请填写点位名称" }]}>
