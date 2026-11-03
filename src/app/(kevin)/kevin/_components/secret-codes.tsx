@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 /** 科乐美指令：↑ ↑ ↓ ↓ ← → ← → B A */
@@ -11,7 +10,7 @@ const KONAMI = [
 
 /**
  * 键盘彩蛋（仅 /kevin 下挂载）：
- * - 依次敲 `gdut` → 浮层认亲，给个回乡会的链接；
+ * - 依次敲 `gdut` → 浮层认亲提示；
  * - 科乐美指令 → emoji 雨。
  * 输入焦点在输入框/可编辑区时不拦截。
  */
@@ -34,7 +33,7 @@ export default function SecretCodes() {
         if (buf.current.length > 8) buf.current.shift();
         if (buf.current.join("").endsWith("gdut")) {
           buf.current = [];
-          showToast("胶己人！🤝 欢迎回乡会官网坐坐");
+          showToast("胶己人！🤝");
         }
         return;
       }
@@ -68,9 +67,6 @@ export default function SecretCodes() {
       {toast && (
         <div className="kevin-toast kevin-mono rounded-full border border-[var(--kv-accent)] bg-[var(--kv-bg-2)] px-5 py-2.5 text-sm shadow-xl">
           {toast}
-          <Link href="/" className="ml-2 underline underline-offset-4 text-[var(--kv-accent)]">
-            去官网
-          </Link>
         </div>
       )}
       {rain && (
