@@ -9,7 +9,7 @@
  * 表单口径——地图为十图下拉（候选见 lib/lineups.ts 的 CS_MAPS），点位名称紧随其后第二位填写，
  * 投掷方式挪到原分步操作的位置。
  * 移动端：内容区已放开 760px 最小宽度（app-layout.module.css），本页再按 useIsNarrow
- * 裁剪表格列（名称列内嵌 地图·道具 摘要）并堆叠工具栏、Dialog 收窄。
+ * 裁剪表格列（名称列内嵌 地图·道具 摘要）、收窄搜索框（新增按钮始终钉在标题行右上角）、Dialog 收窄。
  */
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -237,25 +237,25 @@ export default function AdminLineupsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold">CS 道具点位</h1>
           <p className="mt-1 text-sm text-gray-500">
             配置官网 kevin/csgo 指南：点位名称、投掷方式与截图，保存后前台即时生效。
           </p>
         </div>
-        <div className="flex w-full items-center gap-2 md:w-auto">
+        <Space>
           <Input
             placeholder="搜地图/名称/道具"
             clearable
             value={keyword}
-            className="min-w-0 flex-1 md:w-52 md:flex-none"
+            style={{ width: narrow ? 132 : 200 }}
             onChange={(v) => setKeyword(String(v))}
           />
           <Button theme="primary" onClick={() => openDialog(null)}>
-            新建点位
+            新增点位
           </Button>
-        </div>
+        </Space>
       </div>
 
       {loadError && <Alert theme="error" className="mb-4" message={loadError} />}
@@ -266,13 +266,13 @@ export default function AdminLineupsPage() {
           data={rows}
           columns={columns}
           loading={query.isLoading}
-          empty={query.data?.length ? "没匹配到点位，换个关键字试试" : "暂无点位 —— 点右上角新建第一条"}
+          empty={query.data?.length ? "没匹配到点位，换个关键字试试" : "暂无点位 —— 点右上角「新增点位」加第一条"}
         />
       </div>
 
       <Dialog
         visible={dialogOpen}
-        header={editing ? "编辑点位" : "新建点位"}
+        header={editing ? "编辑点位" : "新增点位"}
         width={narrow ? "94%" : 640}
         destroyOnClose
         confirmLoading={save.isPending}
