@@ -72,13 +72,16 @@ const SKILLS = [
   "React（Hooks · Redux Toolkit / Zustand）",
   "Vue 3（Vue-Router · Pinia）",
   "Taro / Uni-app / 微信小程序",
-  "Ant Design / ElementUI / Vant",
+  "Ant Design / TDesign / ElementUI / Vant",
   "Next.js / Tailwind CSS",
+  "TanStack Query（服务端状态与缓存管理）",
   "Node.js / NestJS",
+  "Spring Boot 3 / MyBatis-Plus / Sa-Token（后端接口实现）",
   "MySQL / TypeORM",
+  "Nginx / HTTPS / Linux 服务器运维",
   "Webpack / Vite / Rsbuild",
   "HTTP / 浏览器渲染 / 性能优化",
-  "Git / GitHub Actions",
+  "Git / GitHub Actions（审批流部署）",
   "Claude Code / Skills / MCP（AI 辅助研发与代码审查）",
 ];
 
