@@ -54,8 +54,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold">工作台</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="text-sm text-gray-500">
           你好，{me.data?.username ?? "管理员"}。以下为各内容模块的总量概览。
         </p>
       </div>

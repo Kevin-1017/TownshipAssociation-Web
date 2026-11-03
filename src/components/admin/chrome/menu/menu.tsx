@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu } from "tdesign-react";
 import MenuLogo from "./menu-logo";
-import { useAdminUI } from "../shared/ui-state";
+import { useAdminUI } from "../../shared/ui-state";
 import style from "./menu.module.css";
 
 const { MenuItem, SubMenu } = Menu;

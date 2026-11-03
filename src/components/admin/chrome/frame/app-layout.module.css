@@ -4,10 +4,14 @@
   flex-direction: row !important;
 }
 
+/* 滚动下沉：这里不滚（hidden），列表页由表格内滚接管、长页由 AdminPage .panel 自滚，
+   顶栏/标题/搜索栏因此始终固定在各自位置 */
 .sideContainer {
   flex: 1;
   min-width: 760px;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /*

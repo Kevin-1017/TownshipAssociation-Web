@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import SecretCodes from "./_components/secret-codes";
 import "./kevin.css";
 
 /**
@@ -21,14 +20,7 @@ export default function KevinLayout({ children }: { children: ReactNode }) {
   return (
     <div className="kevin-root relative min-h-dvh">
       <div className="kevin-aurora" aria-hidden />
-      <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-5 pt-5 sm:px-8">
-        <span className="kevin-mono text-sm text-[var(--kv-soft)]">
-          kevin@gdut:~$
-        </span>
-      </header>
       <main className="relative z-10">{children}</main>
-      {/* 键盘彩蛋：输 gdut / 科乐美指令 */}
-      <SecretCodes />
       <footer className="kevin-mono relative z-10 mx-auto max-w-5xl px-5 py-10 text-xs text-[var(--kv-soft)] sm:px-8">
         © {new Date().getFullYear()} Kevin
       </footer>

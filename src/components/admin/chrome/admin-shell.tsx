@@ -36,9 +36,9 @@ import {
 } from "@/lib/admin-auth";
 import { adminLogout, adminMe, isUnauthorizedError } from "@/lib/admin-api";
 import { AdminUIProvider } from "../shared/ui-state";
-import AdminChrome from "./chrome";
+import AdminChrome from "./frame/chrome";
 import Reveal from "@/components/site/shared/reveal";
-import type { StarterMenuItem } from "./menu";
+import type { StarterMenuItem } from "./menu/menu";
 
 const LOGIN_PATH = "/admin/login";
 
@@ -148,7 +148,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** 登录通过后的框架挂载：取用户名、接退出，并给面包屑当前页标题 */
+/** 登录通过后的框架挂载：取用户名、接退出，并下发当前页标题 */
 function AuthedFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -176,7 +176,7 @@ function AuthedFrame({ children }: { children: ReactNode }) {
     }
   };
 
-  // 面包屑标题：平铺一级 + 二级后按 pathname 精确匹配（分组父项仅作展开容器，不参与匹配跳转）
+  // 页面标题：平铺一级 + 二级后按 pathname 精确匹配（分组父项仅作展开容器，不参与匹配）
   const pageTitle = MENU_ITEMS.flatMap((item) => [item, ...(item.children ?? [])]).find(
     (item) => item.path === pathname,
   )?.label;
@@ -186,10 +186,13 @@ function AuthedFrame({ children }: { children: ReactNode }) {
       items={MENU_ITEMS}
       username={username}
       onLogout={onLogout}
-      breadcrumb={pageTitle ? [pageTitle] : undefined}
+      title={pageTitle}
     >
-      {/* key 随路由变化重挂载，切页也重放一次「渐显上浮」（与官网区块观感同口径） */}
-      <Reveal key={pathname}>{children}</Reveal>
+      {/* key 随路由变化重挂载，切页也重放一次「渐显上浮」（与官网区块观感同口径）。
+          flex 链把外壳确定的高度传给页面，表格页才能「只有表体内滚」 */}
+      <Reveal key={pathname} className="flex min-h-0 flex-1 flex-col">
+        {children}
+      </Reveal>
     </AdminChrome>
   );
 }

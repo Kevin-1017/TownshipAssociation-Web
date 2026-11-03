@@ -139,11 +139,10 @@ export default function AdminRecordsPage() {
   const loadError = rewards.isError ? describeApiError(rewards.error, "获奖记录加载失败") : null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">获奖记录</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-gray-500">
             维护各奖项类别下的获奖人与奖金。奖金留空表示该记录不展示金额。
           </p>
         </div>
@@ -155,15 +154,17 @@ export default function AdminRecordsPage() {
       {noCategories && (
         <Alert
           theme="warning"
-          className="mb-4"
+          className="mb-4 shrink-0"
           message="尚未创建任何奖项类别，请先到「奖项类别」页新增，才能添加获奖记录。"
         />
       )}
-      {loadError && <Alert theme="error" className="mb-4" message={loadError} />}
+      {loadError && <Alert theme="error" className="mb-4 shrink-0" message={loadError} />}
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 bg-white">
         <Table
           rowKey="id"
+          className="admin-table-fill"
+          maxHeight="100%"
           data={rows}
           columns={columns}
           loading={rewards.isLoading}

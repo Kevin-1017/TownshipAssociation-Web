@@ -85,43 +85,10 @@
     0 0 0 1px var(--kv-line);
 }
 
-/* 彩蛋：emoji 雨 */
-.kevin-rain span {
-  position: fixed;
-  top: -2em;
-  font-size: 1.6rem;
-  animation: kv-fall linear forwards;
-  pointer-events: none;
-  z-index: 60;
-}
-@keyframes kv-fall {
-  to {
-    transform: translateY(110vh) rotate(30deg);
-  }
-}
-
-/* 键盘彩蛋浮层 */
-.kevin-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 32px;
-  transform: translateX(-50%);
-  z-index: 70;
-  animation: kv-toast-in 0.25s ease-out;
-}
-@keyframes kv-toast-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 12px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .kevin-aurora::before,
   .kevin-aurora::after,
-  .kevin-caret,
-  .kevin-rain span,
-  .kevin-toast {
+  .kevin-caret {
     animation: none;
   }
   .kevin-tilt {

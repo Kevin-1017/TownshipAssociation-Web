@@ -1,0 +1,18 @@
+.panel {
+  margin: 24px;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+/* 页面标题：与各页区块标题同口径（text-xl font-semibold），下间距接替原面包屑的 8px + 正文上边距 */
+.title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  flex-shrink: 0;
+}

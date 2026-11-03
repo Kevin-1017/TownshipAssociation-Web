@@ -41,7 +41,7 @@ function Chip({
 }
 
 /**
- * 道具列表浏览器：地图页签 × 道具类型过滤，条目默认收起、点开看投掷方式与截图。
+ * 道具列表浏览器：地图页签 × 道具类型过滤，条目默认展开（可手动收起）看投掷方式与截图。
  * 数据来自后端 GET /tsa/lineups（管理端 /admin/lineups 配置）——静态导出页在浏览器
  * 运行时拉取；取数失败给重试出口，不回退打样数据（单一数据源，避免误导）。
  * 2026-10-16 精简：无 点位(site) 分组与 分步操作(steps)；kind 即中文值。
@@ -113,18 +113,24 @@ export default function LineupBrowser() {
 
       {state.status === "ready" && (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            {maps.map((m) => (
-              <Chip key={m} active={map === m} onClick={() => setMap(m)}>
-                {m}
-              </Chip>
-            ))}
-            <span className="mx-1 text-[var(--kv-line)]">|</span>
-            {kinds.map((k) => (
-              <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
-                {k === "全部" ? "全部道具" : k}
-              </Chip>
-            ))}
+          {/* 地图一行、道具一行，行内各自换行 */}
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="kevin-mono mr-1 text-xs text-[var(--kv-soft)]">地图</span>
+              {maps.map((m) => (
+                <Chip key={m} active={map === m} onClick={() => setMap(m)}>
+                  {m}
+                </Chip>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="kevin-mono mr-1 text-xs text-[var(--kv-soft)]">道具</span>
+              {kinds.map((k) => (
+                <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
+                  {k === "全部" ? "全部道具" : k}
+                </Chip>
+              ))}
+            </div>
           </div>
 
           {all.length === 0 && (
@@ -146,6 +152,7 @@ export default function LineupBrowser() {
                 {items.map((l) => (
                   <details
                     key={l.id}
+                    open
                     className="group rounded-xl border border-[var(--kv-line)] bg-[var(--kv-bg-2)] px-4 py-3 open:pb-4"
                   >
                     <summary className="flex cursor-pointer list-none items-center gap-3 text-sm">

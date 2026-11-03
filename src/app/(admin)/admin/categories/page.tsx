@@ -154,11 +154,10 @@ export default function AdminCategoriesPage() {
   const loadError = home.isError ? describeApiError(home.error, "类别数据加载失败") : null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">奖项类别</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-gray-500">
             维护基金会奖励类别（名称/赞助人/奖金总额）。删除类别会连带删除其下获奖记录。
           </p>
         </div>
@@ -167,11 +166,13 @@ export default function AdminCategoriesPage() {
         </Button>
       </div>
 
-      {loadError && <Alert theme="error" message={loadError} className="mb-4" />}
+      {loadError && <Alert theme="error" message={loadError} className="mb-4 shrink-0" />}
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 bg-white">
         <Table
           rowKey="id"
+          className="admin-table-fill"
+          maxHeight="100%"
           data={rows}
           columns={columns}
           loading={home.isLoading || rewards.isLoading}

@@ -153,11 +153,10 @@ export default function AdminDonationsPage() {
     : null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">捐赠鸣谢</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-gray-500">
             维护基金会的捐赠鸣谢名单，官网按捐赠日期倒序展示。
           </p>
         </div>
@@ -166,11 +165,13 @@ export default function AdminDonationsPage() {
         </Button>
       </div>
 
-      {loadError && <Alert theme="error" className="mb-4" message={loadError} />}
+      {loadError && <Alert theme="error" className="mb-4 shrink-0" message={loadError} />}
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 bg-white">
         <Table
           rowKey="id"
+          className="admin-table-fill"
+          maxHeight="100%"
           data={rows}
           columns={columns}
           loading={donations.isLoading}

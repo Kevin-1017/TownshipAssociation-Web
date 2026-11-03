@@ -4,7 +4,7 @@ import { memo } from "react";
 import { Button, Layout, Space } from "tdesign-react";
 import { ViewListIcon } from "tdesign-icons-react";
 import HeaderIcon from "./header-icon";
-import { useAdminUI } from "../shared/ui-state";
+import { useAdminUI } from "../../shared/ui-state";
 import style from "./header.module.css";
 
 const { Header: THeader } = Layout;

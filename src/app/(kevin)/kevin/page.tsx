@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/site/shared/reveal";
-import TiltCard from "./_components/tilt-card";
-import Typewriter from "./_components/typewriter";
+import TiltCard from "@/components/kevin/tilt-card";
+import Typewriter from "@/components/kevin/typewriter";
 
 /**
  * Kevin 个人主页 —— 想改文案直接改下面这几个常量。
@@ -11,14 +11,13 @@ import Typewriter from "./_components/typewriter";
  */
 
 const INTRO =
-  "广东工业大学 2026 届，大数据管理与应用，潮阳潮南人。主战场在前端 —— React / Vue / 跨端都写，" +
-  "也自己扛过后端与部署（Spring Boot / MySQL / Nginx）。闲时打两把 CS，顺手把常丢的道具记成了下面的指南。";
+  "以前端为主方向，熟练运用 React / Vue 与跨端开发；" +
+  "同时具备独立承担后端与部署的工程能力（Spring Boot / MySQL / Nginx），可完成从接口实现到线上交付的完整链路。";
 
-const EDUCATION = {
+const EDUCATION = { 
   school: "广东工业大学",
   major: "大数据管理与应用 · 本科",
   period: "2022.09 – 2026.07",
-  extra: "GPA 3.9/5.0 · 优秀学生二等奖学金",
 };
 
 const INTERNSHIPS = [
@@ -129,8 +128,6 @@ export default function KevinPage() {
         <p className="mt-5 max-w-xl leading-[1.9] text-[var(--kv-soft)]">{INTRO}</p>
         <p className="kevin-mono mt-4 text-xs leading-[1.9] text-[var(--kv-soft)]">
           {EDUCATION.school} · {EDUCATION.major} · {EDUCATION.period}
-          <br />
-          {EDUCATION.extra}
         </p>
       </section>
 
@@ -203,13 +200,13 @@ export default function KevinPage() {
           <TiltCard className="mt-5">
             <Link href="/kevin/csgo" className="block">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="font-semibold">CS:GO / CS2 道具指南</h3>
+                <h3 className="font-semibold">CS2 道具指南</h3>
                 <span className="kevin-mono text-xs text-[var(--kv-soft)]">
-                  我自己丢得进去的才算数 →
+                  →
                 </span>
               </div>
               <p className="mt-2 text-sm leading-[1.8] text-[var(--kv-soft)]">
-                按地图整理的烟雾 / 闪光 / 火弹投掷点位笔记，后台随时补、前台即时生效。
+                按地图整理的烟雾 / 闪光 / 火弹投掷点位笔记
               </p>
             </Link>
           </TiltCard>
@@ -235,9 +232,6 @@ export default function KevinPage() {
             </a>
           ))}
         </div>
-        <p className="kevin-mono mt-4 text-xs text-[var(--kv-soft)]">
-          （小提示：这个页面藏了键盘彩蛋，试试学校英文缩写。）
-        </p>
       </section>
     </div>
   );

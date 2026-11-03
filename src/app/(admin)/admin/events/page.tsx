@@ -217,11 +217,10 @@ export default function AdminEventsPage() {
   const loadError = events.isError ? describeApiError(events.error, "事件列表加载失败") : null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">乡会事件</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-gray-500">
             配置官网/小程序展示的事件：封面 + 标题 + 公众号链接；删除即下架。
           </p>
         </div>
@@ -249,11 +248,13 @@ export default function AdminEventsPage() {
         </Space>
       </div>
 
-      {loadError && <Alert theme="error" className="mb-4" message={loadError} />}
+      {loadError && <Alert theme="error" className="mb-4 shrink-0" message={loadError} />}
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 bg-white">
         <Table
           rowKey="id"
+          className="admin-table-fill"
+          maxHeight="100%"
           data={rows}
           columns={columns}
           loading={events.isLoading}

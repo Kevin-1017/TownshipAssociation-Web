@@ -34,3 +34,36 @@ code {
   display: flex;
   align-items: center;
 }
+
+/* 弹窗表单节奏统一：TDesign 表单项 margin 有三套互相打架的特例（普通 24px、
+   带 help 4px、last-of-type/--last 0），交错出现时行距忽紧忽松，且 --last 判定
+   会错伤相邻项。改为 flex column 后用 gap 统一供给间距，项自身 margin 一律清零。
+   作用域限定弹窗内，不影响登录页等处的表单。 */
+.t-dialog__body .t-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--td-comp-margin-xl, 20px);
+}
+.t-dialog__body .t-form .t-form__item {
+  margin-bottom: 0 !important;
+}
+
+/* 列表页「表体内滚」：.admin-table-fill 挂在 Table 根元素上（会合流进 .t-table 类），
+   由外层卡片（flex-col）把视口算出的高度传进来，滚动盒 = .t-table__content
+   （TDesign 自带 overflow:auto）。页面侧给 Table 传 maxHeight="100%" 只为触发
+   thead 上的 t-table__header--fixed（sticky 表头）；盒高实际由这条 flex 链决定，
+   分页条作为根的另一 flex 子项固定钉在卡片底部。 */
+.admin-table-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.admin-table-fill > .t-table__content {
+  flex: 1;
+  min-height: 0;
+}
+/* TDesign 只给了 sticky 没给吸附边，缺 top 即不吸顶，这里补上 */
+.admin-table-fill thead.t-table__header--fixed {
+  top: 0;
+}

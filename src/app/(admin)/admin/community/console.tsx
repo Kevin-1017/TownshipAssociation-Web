@@ -317,19 +317,17 @@ export default function CommunityConsole({ channel }: { channel: CommunityPostTy
     : null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">社区审核 · {CHANNEL_LABEL[channel]}</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            只列「{CHANNEL_LABEL[channel]}」栏目。状态是统一审核态：待审核/已驳回 =
-            动态本身处于该状态、或其下有同状态评论（评论只会挂在已过审动态下）；已通过 =
-            已过审动态；展开只看到同状态评论，「全部」则含所有评论。通过后才对外，驳回可恢复。
-          </p>
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* 标题由外壳下发（菜单 label「美食基地/校园资讯」），这里只留口径说明——原 h1 的「社区审核」前缀挪进正文 */}
+      <div className="mb-4 shrink-0">
+        <p className="text-sm text-gray-500">
+          社区审核 · 只列「{CHANNEL_LABEL[channel]}」栏目。状态是统一审核态：待审核/已驳回 =
+          动态本身处于该状态、或其下有同状态评论（评论只会挂在已过审动态下）；已通过 =
+          已过审动态；展开只看到同状态评论，「全部」则含所有评论。通过后才对外，驳回可恢复。
+        </p>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-3">
+      <div className="mb-3 flex shrink-0 flex-wrap items-center gap-3">
         <RadioGroup
           value={status}
           theme="button"
@@ -346,11 +344,13 @@ export default function CommunityConsole({ channel }: { channel: CommunityPostTy
         />
       </div>
 
-      {loadError && <Alert theme="error" className="mb-4" message={loadError} />}
+      {loadError && <Alert theme="error" className="mb-4 shrink-0" message={loadError} />}
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 bg-white">
         <EnhancedTable<TreeRow>
           rowKey="uid"
+          className="admin-table-fill"
+          maxHeight="100%"
           data={postTree.data?.rows ?? []}
           columns={treeColumns}
           loading={postTree.isLoading}

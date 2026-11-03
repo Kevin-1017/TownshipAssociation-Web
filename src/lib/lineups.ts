@@ -25,6 +25,7 @@ export const CS_MAPS = [
   "Cobblestone",
   "Cache",
   "Ancient",
+  "Anubis"
 ] as const;
 
 /** 管理端地图 Select 选项 */

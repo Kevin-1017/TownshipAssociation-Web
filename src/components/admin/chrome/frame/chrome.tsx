@@ -6,10 +6,10 @@
  */
 import type { ReactNode } from "react";
 import { Layout } from "tdesign-react";
-import SideMenu, { type StarterMenuItem } from "./menu";
-import AdminHeader from "./header";
-import AdminFooter from "./footer";
-import AdminPage from "./page";
+import SideMenu, { type StarterMenuItem } from "../menu/menu";
+import AdminHeader from "../header/header";
+import AdminFooter from "../footer/footer";
+import AdminPage from "../page/page";
 import shellStyle from "./shell.module.css";
 import appLayoutStyle from "./app-layout.module.css";
 
@@ -20,8 +20,8 @@ interface IProps {
   items?: StarterMenuItem[];
   username?: string;
   onLogout?: () => void;
-  /** 面包屑(本站单层菜单，传当前页标题即可) */
-  breadcrumb?: string[];
+  /** 页面标题（本站单层菜单，直接取当前路由的菜单 label；不再各页自写 h1） */
+  title?: string;
 }
 
 export default function AdminChrome({
@@ -30,7 +30,7 @@ export default function AdminChrome({
   items = [],
   username = "",
   onLogout = () => {},
-  breadcrumb,
+  title,
 }: IProps) {
   if (bare) {
     return <Layout className={shellStyle.panel}>{children}</Layout>;
@@ -42,7 +42,7 @@ export default function AdminChrome({
         <SideMenu items={items} showLogo showOperation />
         <Layout className={appLayoutStyle.sideContainer}>
           <AdminHeader username={username} onLogout={onLogout} />
-          <AdminPage breadcrumbs={breadcrumb}>{children}</AdminPage>
+          <AdminPage title={title}>{children}</AdminPage>
           <AdminFooter />
         </Layout>
       </Layout>
