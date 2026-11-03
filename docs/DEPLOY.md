@@ -12,7 +12,7 @@
 | 服务器 | 腾讯云轻量应用服务器,Ubuntu Server 24.04 LTS。现役唯一生产机:香港 `VM-0-13-ubuntu`(43.161.230.68);新加坡 `VM-0-4-ubuntu` 已于 2026-10 退网 |
 | 登录 | 走 `~/.ssh/config` 主机别名:`ssh tsa-hk`(`User ubuntu`,密钥 `~/.ssh/tsa_hk_kevin.pem`)。历史文档曾写"kevin.pem 在 Downloads"当作 SG 的登录方式,**是错的**——SG 从来没用过控制台下载的 pem |
 | sudo | ubuntu 免密 sudo 已配置(`sudo -n` 全自动可用) |
-| 后端服务 | systemd unit `/etc/systemd/system/tsa-api.service`:root 运行,`ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar /opt/tsa/api/tsa-api.jar`,`EnvironmentFile=/opt/tsa/api/env`(600 root,含 `SPRING_PROFILES_ACTIVE/DATASOURCE_URL/USERNAME/PASSWORD`、`SERVER_FORWARDHEADERSSTRATEGY`、`TSA_FILES_DIR`、`TZ`、knife4j 开关等),`Restart=on-failure` |
+| 后端服务 | systemd unit `/etc/systemd/system/tsa-api.service`:root 运行,`ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar /opt/tsa/api/tsa-api.jar`,`EnvironmentFile=/opt/tsa/api/env`(600 root,含 `SPRING_PROFILES_ACTIVE/DATASOURCE_URL/USERNAME/PASSWORD`、`SERVER_FORWARDHEADERSSTRATEGY`、`SERVER_ADDRESS`(只监听回环,见 §5)、`TSA_FILES_DIR`、`TZ`、knife4j 开关等),`Restart=on-failure` |
 | 数据库 | 本机 MySQL 8 系(`mysql.service`),库名 `tsa`;连接串 `jdbc:mysql://localhost:3306/tsa?...serverTimezone=Asia/Shanghai`(凭据在 `/opt/tsa/api/env`) |
 | Java(服务器) | OpenJDK 25.0.4,与仓库 `java.version=25` 匹配,新 jar 可直接跑 |
 | Nginx | 站点配置 `/etc/nginx/sites-enabled/tsa`;`server_name gdutgaginang.cn www.gdutgaginang.cn`;静态根 `/opt/tsa/web`(属主 `ubuntu:ubuntu`);`/tsa` 反代 `http://127.0.0.1:8080`;页面 `try_files $uri $uri/index.html $uri.html =404` |
@@ -104,10 +104,24 @@ chown -R ubuntu:ubuntu /opt/tsa/web
 > 注意:`.env.production` 的 `NEXT_PUBLIC_API_BASE_URL` 留空 = 同源相对路径,
 > 换服务器/换域名都不用重新构建;构建期常量,改了必须重 build。
 
-## 5. (可选加固)反代现状
+## 5. 反代与监听面
 
 现网 `proxy_pass http://127.0.0.1:8080` + env 里 `SERVER_FORWARDHEADERSSTRATEGY` —— 与限频的
 「反代必须配 forward-headers」要求一致,**不改不验,动 nginx 前单独评审**。
+
+**后端只绑回环**:env 里 `SERVER_ADDRESS=127.0.0.1`(Spring 宽松绑定读作 `server.address`,环境变量
+优先级高于 `application.yml`,仓库里没写也生效)。不带这个键时 Tomcat 缺省绑 `[::]:8080` 双栈全网卡,
+8080 对外与否就只剩上一节那层控制台规则兜着;绑回环后 IPv4/IPv6 两个方向都进不来,全机非回环监听
+只剩 22/80/443,与控制台放行口径一致 —— 系统层因此不必再叠 nft/iptables。`deploy.sh` 的 `smoke_app`
+打的就是 `http://127.0.0.1:8080/tsa/health`,反代也走 127.0.0.1,收紧监听不影响自检与自动回滚判断。
+**换机/重装后这条要补上**,否则服务一起来就恢复全网卡监听。
+
+**生产不启用 knife4j**:`KNIFE4J_ENABLE=false`、`SPRINGDOC_APIDOCS_ENABLED=false`、
+`SPRINGDOC_SWAGGERUI_ENABLED=false`(同在 env,别丢)。jar 仍打包着 knife4j 的静态资源,所以
+`/doc.html` 的 HTML 壳在**回环直连 8080** 时仍能拿到(实测是真 HTML),但 api-docs 已关 ——
+`/v3/api-docs` 与 `.yaml` 都回 `{"code":404,"资源不存在"}`,页面拉不到 schema。走 nginx 443 时
+两者都是 404(nginx 只反代 `location /tsa/`,文档路径根本不过去)。要连壳都不出得从依赖里剔除,
+当前靠监听收紧兜住即可。**别拿状态码判读写好坏**:本工程一律 HTTP 200 + `Result.code`。
 
 ## 6. 冒烟清单(部署后,走域名公网验)
 
@@ -170,7 +184,7 @@ chown -R ubuntu:ubuntu /opt/tsa/web
 
 1. **CI 不经手 `/opt/tsa/api/env`** —— 那是 DB 口令的唯一副本;也不碰 `upload-data/`,图片本体在磁盘、库里只存路径。
 2. **只有 `push` 触发部署** —— 两仓都是公开仓,给 `pull_request` / `pull_request_target` 开部署,等于任何人都能靠一个 PR 读到部署私钥。
-3. **SQL 迁移仍人工** —— 流水不跑 DDL,改了实体先在测试库过一遍再按 §5 上机执行。
+3. **SQL 迁移仍人工** —— 流水不跑 DDL,改了实体先在测试库过一遍再按 §3 上机执行。
 4. **审批靠 Environment** —— 两仓各建名为 `production` 的 Environment 且勾 Required reviewers;没建 GitHub 会静默建一个不拦人的,变成 push 即上线。
 
 四个 Secret 填在**仓库级**(Settings → Secrets and variables → Actions → **Secrets** 标签页,不是 Variables):`DEPLOY_USER`、`DEPLOY_HOST`、`DEPLOY_SSH_KEY`、`DEPLOY_KNOWN_HOSTS`,两仓各一份。流水第一步就是检查这四个是否非空,空则报名字退出,而不是甩一个 `Could not resolve hostname`。
